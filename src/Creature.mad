@@ -1,0 +1,137 @@
+import type { Random } from "Random"
+
+import { GT, LT } from "Compare"
+import List from "List"
+import { fromMaybe } from "Maybe"
+import R from "Random"
+
+
+
+export type Gene = Gene(Short, Float, String)
+
+geneIndex :: Gene -> Short
+export geneIndex = where {
+  Gene(s, _, _) =>
+    s
+}
+
+geneExpression :: Gene -> Float
+export geneExpression = where {
+  Gene(_, f, _) =>
+    f
+}
+
+geneName :: Gene -> String
+export geneName = where {
+  Gene(_, _, n) =>
+    n
+}
+
+sameGeneIndex :: Gene -> Gene -> Boolean
+sameGeneIndex = (a, b) => geneIndex(a) == geneIndex(b)
+
+dominantGene :: Random -> Gene -> Gene -> Gene
+dominantGene = (r, a, b) => {
+  ax = geneExpression(a)
+  bx = geneExpression(b)
+  return if (ax > bx) {
+    a
+  } else if (ax == bx) {
+    pipe(
+      R.pick([a, b]),
+      fromMaybe(a),
+    )(r)
+  } else {
+    b
+  }
+}
+
+hasGeneByIndex :: List Gene -> Gene -> Boolean
+hasGeneByIndex = (gs, g) => pipe(
+  map(geneIndex),
+  List.includes(geneIndex(g)),
+)(gs)
+
+splice :: Random -> List Gene -> List Gene -> List Gene
+splice = (r, as, bs) => pipe(
+  List.concat(bs),
+  List.sortBy(
+    (a, b) => {
+      ia = geneIndex(a)
+      ib = geneIndex(b)
+      return ia >= ib ? LT : GT
+    },
+  ),
+  List.reduce(
+    (stack, g) => {
+      has = hasGeneByIndex(stack, g)
+      return if (!has) {
+        List.append(g, stack)
+      } else {
+        map((h) => sameGeneIndex(g, h) ? dominantGene(r, g, h) : h, stack)
+      }
+    },
+    [],
+  ),
+)(as)
+
+
+export type Mood = Content | Angry | Sad | Tired | Happy | Confused | Excited
+export alias Internals = { focus :: #[Integer, Integer], status :: Mood }
+export type Creature = Creature(Short, Short, List Gene, Short, String, Internals) | Ghost
+
+export DEFAULT_PARTIAL_INTERNALS = { focus: #[-1, -1], status: Content }
+
+export makeCounter = () => {
+  i = 0_s
+  return () => {
+    i := i + 1_s
+    return i
+  }
+}
+
+isGhost :: Creature -> Boolean
+export isGhost = where {
+  Ghost =>
+    true
+
+  _ =>
+    false
+}
+
+genes :: Creature -> List Gene
+export genes = where {
+  Ghost =>
+    []
+
+  Creature(_, _, g, _, _, _) =>
+    g
+}
+
+creatureName :: Creature -> String
+export creatureName = where {
+  Creature(_, _, _, _, n, _) =>
+    n
+
+  Ghost =>
+    "?"
+}
+creatureId :: Creature -> Short
+export creatureId = where {
+  Creature(_, _, _, i, _, _) =>
+    i
+
+  Ghost =>
+    -1_s
+}
+
+original :: List Gene -> Short -> String -> Internals -> Creature
+export original = Creature(-1_s, -1_s)
+
+reproduce :: Random -> String -> Short -> Creature -> Creature -> Creature
+export reproduce = (r, name, s, a, b) => {
+  ag = genes(a)
+  bg = genes(b)
+  mixed = splice(r, ag, bg)
+  return Creature(creatureId(a), creatureId(b), mixed, s, name, DEFAULT_PARTIAL_INTERNALS)
+}

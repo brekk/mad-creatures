@@ -1,0 +1,44 @@
+import type { Creature, Gene, Internals, Mood } from "./Creature"
+
+import IO from "IO"
+import { generateFromString } from "Random"
+
+import { Content, Creature, Gene, Ghost, makeCounter, original, reproduce } from "./Creature"
+
+
+
+main = () => {
+  seed = generateFromString("creature-feature")
+  counter = makeCounter()
+  GENES = {
+    spotted: Gene(0_s, 0.0, "Spotted"),
+    striped: Gene(0_s, 0.1, "Striped"),
+    calico: Gene(0_s, 0.2, "Calico"),
+    yellow: Gene(1_s, 0.0, "Yellow"),
+    white: Gene(1_s, 0.0, "White"),
+    red: Gene(1_s, 0.0, "Red"),
+  }
+  YellowSpotted = original([GENES.spotted, GENES.yellow])
+  WhiteStriped = original([GENES.striped, GENES.white])
+  jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
+  skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
+  spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
+  glynk = original(
+    [GENES.red, GENES.calico],
+    counter(),
+    "Glynk",
+    { focus: #[0, 0], status: Content },
+  )
+  IO.pTrace(
+    "creatures!",
+    #[
+      reproduce(seed, "Comini", counter(), jocomo, skimini),
+      reproduce(seed, "Jikimo", counter(), jocomo, skimini),
+      reproduce(seed, "Jokomi", counter(), jocomo, skimini),
+      reproduce(seed, "Spantini", counter(), spantix, skimini),
+      reproduce(seed, "Glyntix", counter(), glynk, spantix),
+      reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
+      reproduce(seed, "Jocontix", counter(), jocomo, spantix),
+    ],
+  )
+}
