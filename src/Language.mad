@@ -1,0 +1,153 @@
+import type { Maybe } from "Maybe"
+import type { Random } from "Random"
+
+import Dict from "Dictionary"
+import IO from "IO"
+import List from "List"
+import { Just, Nothing, fromMaybe } from "Maybe"
+import { boolean, integer, pick } from "Random"
+import String from "String"
+
+import { ALPHABET, CONSONANTS, LETTER_HEADS, LETTER_TAILS, VOWELS } from "./Constants"
+import { possible } from "./Random"
+
+
+
+vowel = pick(VOWELS)
+consonant = pick(CONSONANTS)
+
+select :: Random -> Dictionary Char (List Char) -> Char -> Maybe Char
+select = (r, dict, c) => pipe(
+  Dict.get($, dict),
+  chain(pick($, r)),
+)(c)
+
+after :: Random -> Char -> Maybe Char
+export after = (r, c) => pipe(
+  select(r, LETTER_TAILS),
+)(c)
+
+before :: Random -> Char -> Maybe Char
+export before = (r, c) => pipe(
+  select(r, LETTER_HEADS),
+)(c)
+
+chars :: Random -> Integer -> List (Maybe Char)
+export chars = (r, count) => pipe(
+  List.range(0),
+  map((_) => pick(ALPHABET, r)),
+)(count)
+
+canFollow :: Char -> Char -> Boolean
+export canFollow = (a, b) => pipe(
+  Dict.get($, LETTER_TAILS),
+  map(List.includes(b)),
+  fromMaybe(false),
+)(a)
+
+canPrecede :: Char -> Char -> Boolean
+export canPrecede = (a, b) => pipe(
+  Dict.get($, LETTER_HEADS),
+  map(List.includes(a)),
+  fromMaybe(false),
+)(b)
+
+charWalkForward :: List (Maybe Char) -> String
+charWalkForward = pipe(
+  List.reduce(
+    (data, j) => {
+      return where(#[data.last, j]) {
+        #[Nothing, Just(x)] =>
+          ({ last: j, word: String.appendChar(x, data.word) })
+
+        #[Just(prev), Just(x)] =>
+          canFollow(prev, x) ? ({ last: j, word: String.appendChar(x, data.word) }) : data
+
+        _ =>
+          data
+      }
+    },
+    { word: "", last: Nothing },
+  ),
+  .word,
+)
+
+charWalkBackward :: List (Maybe Char) -> String
+charWalkBackward = (raw) => pipe(
+  List.reverse,
+  List.reduce(
+    (data, j) => {
+      return where(#[data.last, j]) {
+        #[Nothing, Just(x)] =>
+          ({ last: j, word: String.prependChar(x, data.word) })
+
+        #[Just(prev), Just(x)] =>
+          canFollow(prev, x) ? ({ last: j, word: String.prependChar(x, data.word) }) : data
+
+        _ =>
+          data
+      }
+    },
+    {
+      word: "",
+      last: pipe(
+        List.last,
+        fromMaybe(Nothing),
+      )(raw),
+    },
+  ),
+  .word,
+)(raw)
+
+
+forword :: Random -> String
+export forword = (r) => {
+  count = integer(2, 7, r)
+  base = chars(r, count)
+  return pipe(
+    map(
+      where {
+        Just(x) =>
+          boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
+
+        Nothing =>
+          []
+      },
+    ),
+    List.flatten,
+    charWalkForward,
+  )(base)
+}
+
+backword :: Random -> String
+export backword = (r) => {
+  count = integer(2, 7, r)
+  base = chars(r, count)
+  return pipe(
+    map(
+      where {
+        Just(x) =>
+          boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
+
+        Nothing =>
+          []
+      },
+    ),
+    List.flatten,
+    charWalkBackward,
+  )(base)
+}
+
+// generateSyllable :: Random -> List Char
+// generateSyllable = (r) => {
+//   possiblePath = possible(
+//     r,
+//     [
+//       before(r) 
+//     ],
+//   )
+// }
+// mixNames :: Random -> String -> String -> String
+// mixNames = (r, a, b) => {}
+// name :: Random -> String
+// name = (r) => {}

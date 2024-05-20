@@ -82,13 +82,6 @@ export type Creature = Creature(Short, Short, List Gene, Short, String, Internal
 
 export DEFAULT_PARTIAL_INTERNALS = { focus: #[-1, -1], status: Content }
 
-export makeCounter = () => {
-  i = 0_s
-  return () => {
-    i := i + 1_s
-    return i
-  }
-}
 
 isGhost :: Creature -> Boolean
 export isGhost = where {

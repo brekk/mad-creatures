@@ -1,0 +1,12 @@
+import type { Maybe } from "Maybe"
+import type { Random } from "Random"
+
+import { pick } from "Random"
+
+
+
+possible :: Random -> List (a -> b) -> a -> Maybe b
+export possible = (r, paths, x) => pipe(
+  pick(paths),
+  map((fn) => fn(x)),
+)(r)

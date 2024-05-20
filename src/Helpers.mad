@@ -1,0 +1,7 @@
+export makeCounter = () => {
+  i = 0_s
+  return () => {
+    i := i + 1_s
+    return i
+  }
+}
