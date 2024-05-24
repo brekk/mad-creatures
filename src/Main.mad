@@ -1,4 +1,7 @@
-import type { Creature, Gene, Internals, Mood } from "./Creature"
+import type { Random } from "Random"
+
+import type { Creature, Internals, Mood } from "@/Creature"
+import type { Gene } from "@/Genes"
 
 import IO from "IO"
 import List from "List"
@@ -6,51 +9,46 @@ import { Just, Nothing } from "Maybe"
 import { boolean, generateFromString } from "Random"
 import String from "String"
 
-import { Content, Creature, Gene, Ghost, original, reproduce } from "./Creature"
-import { makeCounter } from "./Helpers"
-import Language from "./Language"
+import { makeCounter } from "@/Helpers"
+import Language from "@/Language"
 
 
+
+// generate :: List Creature -> List Creature
+// generate = (critters) => pipe(
+//   List.reduce((env, critter) => {
+
+//   },
+//   { seed, counter, creatures: []}
+// )(critters)
 
 main = () => {
   seed = generateFromString("creature-0.0.1")
   counter = makeCounter()
 
-  ROLES = { PATTERN: 0_s, COLOR: 1_s, ALBINISM: 2_s }
-  geneP = Gene(ROLES.PATTERN)
-  geneC = Gene(ROLES.COLOR)
-  GENES = {
-    spotted: geneP(0.0, "Spotted"),
-    striped: geneP(0.1, "Striped"),
-    calico: geneP(0.2, "Calico"),
-    yellow: geneC(0.0, "Yellow"),
-    white: geneC(0.0, "White"),
-    red: geneC(0.0, "Red"),
-    albino: Gene(ROLES.ALBINISM, 0.0, "Albino"),
-  }
-  YellowSpotted = original([GENES.spotted, GENES.yellow])
-  WhiteStriped = original([GENES.striped, GENES.white])
-  jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
-  skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
-  spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
-  glynk = original(
-    [GENES.red, GENES.calico, GENES.albino],
-    counter(),
-    "Glynk",
-    { focus: #[0, 0], status: Content },
-  )
-  IO.pTrace(
-    "creatures!",
-    #[
-      reproduce(seed, "Comini", counter(), jocomo, skimini),
-      reproduce(seed, "Jikimo", counter(), jocomo, skimini),
-      reproduce(seed, "Jokomi", counter(), jocomo, skimini),
-      reproduce(seed, "Spantini", counter(), spantix, skimini),
-      reproduce(seed, "Glyntix", counter(), glynk, spantix),
-      reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
-      reproduce(seed, "Jocontix", counter(), jocomo, spantix),
-    ],
-  )
+  /*
+            jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
+            skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
+            spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
+            glynk = original(
+              [GENES.red, GENES.calico, GENES.albino],
+              counter(),
+              "Glynk",
+              { focus: #[0, 0], status: Content },
+            )
+            IO.pTrace(
+              "creatures!",
+              #[
+                reproduce(seed, "Comini", counter(), jocomo, skimini),
+                reproduce(seed, "Jikimo", counter(), jocomo, skimini),
+                reproduce(seed, "Jokomi", counter(), jocomo, skimini),
+                reproduce(seed, "Spantini", counter(), spantix, skimini),
+                reproduce(seed, "Glyntix", counter(), glynk, spantix),
+                reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
+                reproduce(seed, "Jocontix", counter(), jocomo, spantix),
+              ],
+            )
+          */
   names = List.repeatWith(
     (_) => pipe(
       Language.wordlike(boolean(seed)),
@@ -59,6 +57,4 @@ main = () => {
     20,
   )
   IO.pTrace("names", names)
-  tripleVowel = String.match("[aeiouAEIOU][aeiouAEIOU][aeiouAEIOU]")
-  IO.pTrace("vowelRule", map(tripleVowel, ["cooop", "spueul", "nice", "Iei"]))
 }

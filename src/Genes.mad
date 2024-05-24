@@ -1,0 +1,88 @@
+import type { Random } from "Random"
+
+import { GT, LT } from "Compare"
+import List from "List"
+import { fromMaybe } from "Maybe"
+import { pick } from "Random"
+
+
+
+export type Gene = Gene(Short, Float, String)
+
+geneIndex :: Gene -> Short
+export geneIndex = where {
+  Gene(s, _, _) =>
+    s
+}
+
+geneExpression :: Gene -> Float
+export geneExpression = where {
+  Gene(_, f, _) =>
+    f
+}
+
+geneName :: Gene -> String
+export geneName = where {
+  Gene(_, _, n) =>
+    n
+}
+
+sameGeneIndex :: Gene -> Gene -> Boolean
+sameGeneIndex = (a, b) => geneIndex(a) == geneIndex(b)
+
+dominantGene :: Random -> Gene -> Gene -> Gene
+dominantGene = (r, a, b) => {
+  ax = geneExpression(a)
+  bx = geneExpression(b)
+  return if (ax > bx) {
+    a
+  } else if (ax == bx) {
+    pipe(
+      pick([a, b]),
+      fromMaybe(a),
+    )(r)
+  } else {
+    b
+  }
+}
+
+hasGeneByIndex :: List Gene -> Gene -> Boolean
+hasGeneByIndex = (gs, g) => pipe(
+  map(geneIndex),
+  List.includes(geneIndex(g)),
+)(gs)
+
+splice :: Random -> List Gene -> List Gene -> List Gene
+export splice = (r, as, bs) => pipe(
+  List.concat(bs),
+  List.sortBy(
+    (a, b) => {
+      ia = geneIndex(a)
+      ib = geneIndex(b)
+      return ia >= ib ? LT : GT
+    },
+  ),
+  List.reduce(
+    (stack, g) => {
+      has = hasGeneByIndex(stack, g)
+      return if (!has) {
+        List.append(g, stack)
+      } else {
+        map((h) => sameGeneIndex(g, h) ? dominantGene(r, g, h) : h, stack)
+      }
+    },
+    [],
+  ),
+)(as)
+
+
+
+ALL_GENES = [
+  Gene(0_s, 0.0, "Spotted"),
+  Gene(0_s, 0.1, "Striped"),
+  Gene(0_s, 0.2, "Calico"),
+  Gene(1_s, 0.0, "Yellow"),
+  Gene(1_s, 0.0, "White"),
+  Gene(1_s, 0.0, "Red"),
+  Gene(2_s, 0.0, "Albino"),
+]

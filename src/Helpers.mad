@@ -1,3 +1,4 @@
+makeCounter :: {} -> {} -> Short
 export makeCounter = () => {
   i = 0_s
   return () => {

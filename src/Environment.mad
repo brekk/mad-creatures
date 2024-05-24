@@ -1,0 +1,20 @@
+import type { Random } from "Random"
+
+import type { Creature } from "@/Creature"
+
+import { generateFromString } from "Random"
+
+import { makeCounter } from "@/Helpers"
+
+
+
+export alias Environment = {
+  counter :: {} -> Short,
+  creatures :: Dictionary Short Creature,
+  seed :: Random,
+}
+
+create :: String -> Environment
+export create = (seedString) => {
+  return { counter: makeCounter(), seed: generateFromString(seedString), creatures: {{}} }
+}
