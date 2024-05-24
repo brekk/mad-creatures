@@ -3,7 +3,8 @@ import type { Creature, Gene, Internals, Mood } from "./Creature"
 import IO from "IO"
 import List from "List"
 import { Just, Nothing } from "Maybe"
-import { generateFromString } from "Random"
+import { boolean, generateFromString } from "Random"
+import String from "String"
 
 import { Content, Creature, Gene, Ghost, original, reproduce } from "./Creature"
 import { makeCounter } from "./Helpers"
@@ -14,14 +15,18 @@ import Language from "./Language"
 main = () => {
   seed = generateFromString("creature-0.0.1")
   counter = makeCounter()
+
+  ROLES = { PATTERN: 0_s, COLOR: 1_s, ALBINISM: 2_s }
+  geneP = Gene(ROLES.PATTERN)
+  geneC = Gene(ROLES.COLOR)
   GENES = {
-    spotted: Gene(0_s, 0.0, "Spotted"),
-    striped: Gene(0_s, 0.1, "Striped"),
-    calico: Gene(0_s, 0.2, "Calico"),
-    yellow: Gene(1_s, 0.0, "Yellow"),
-    white: Gene(1_s, 0.0, "White"),
-    red: Gene(1_s, 0.0, "Red"),
-    albino: Gene(2_s, 0.0, "Albino"),
+    spotted: geneP(0.0, "Spotted"),
+    striped: geneP(0.1, "Striped"),
+    calico: geneP(0.2, "Calico"),
+    yellow: geneC(0.0, "Yellow"),
+    white: geneC(0.0, "White"),
+    red: geneC(0.0, "Red"),
+    albino: Gene(ROLES.ALBINISM, 0.0, "Albino"),
   }
   YellowSpotted = original([GENES.spotted, GENES.yellow])
   WhiteStriped = original([GENES.striped, GENES.white])
@@ -46,35 +51,14 @@ main = () => {
       reproduce(seed, "Jocontix", counter(), jocomo, spantix),
     ],
   )
-  // IO.pTrace("chars!", Language.chars(seed, 5))
-  IO.pTrace(
-    "forword",
-    [
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-      Language.forword(seed),
-    ],
+  names = List.repeatWith(
+    (_) => pipe(
+      Language.wordlike(boolean(seed)),
+      Language.capitalize,
+    )(seed),
+    20,
   )
-  IO.pTrace(
-    "backword",
-    [
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-      Language.backword(seed),
-    ],
-  )
+  IO.pTrace("names", names)
+  tripleVowel = String.match("[aeiouAEIOU][aeiouAEIOU][aeiouAEIOU]")
+  IO.pTrace("vowelRule", map(tripleVowel, ["cooop", "spueul", "nice", "Iei"]))
 }

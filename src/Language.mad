@@ -99,55 +99,43 @@ charWalkBackward = (raw) => pipe(
   .word,
 )(raw)
 
+tripleVowel :: String -> Boolean
+export tripleVowel = String.match("[aeiouAEIOU][aeiouAEIOU][aeiouAEIOU]")
 
-forword :: Random -> String
-export forword = (r) => {
-  count = integer(2, 7, r)
+wordlike :: Boolean -> Random -> String
+export wordlike = (mode, r) => {
+  count = integer(3, 7, r)
   base = chars(r, count)
-  return pipe(
-    map(
-      where {
-        Just(x) =>
-          boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
+  name = ""
+  algo = mode ? charWalkForward : charWalkBackward
+  while(String.length(name) < 4) {
+    pipe(
+      map(
+        where {
+          Just(x) =>
+            boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
 
-        Nothing =>
-          []
+          Nothing =>
+            []
+        },
+      ),
+      List.flatten,
+      algo,
+      (newName) => {
+        if (!tripleVowel(newName)) do {
+          name := newName
+        }
       },
-    ),
-    List.flatten,
-    charWalkForward,
-  )(base)
+    )(base)
+  }
+  return name
 }
+export forword = wordlike(true)
+export backword = wordlike(false)
 
-backword :: Random -> String
-export backword = (r) => {
-  count = integer(2, 7, r)
-  base = chars(r, count)
-  return pipe(
-    map(
-      where {
-        Just(x) =>
-          boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
-
-        Nothing =>
-          []
-      },
-    ),
-    List.flatten,
-    charWalkBackward,
-  )(base)
-}
-
-// generateSyllable :: Random -> List Char
-// generateSyllable = (r) => {
-//   possiblePath = possible(
-//     r,
-//     [
-//       before(r) 
-//     ],
-//   )
-// }
-// mixNames :: Random -> String -> String -> String
-// mixNames = (r, a, b) => {}
-// name :: Random -> String
-// name = (r) => {}
+export capitalize = (str) => pipe(
+  String.toUpper,
+  String.firstChar,
+  map(String.prependChar($, String.slice(1, String.length(str), str))),
+  fromMaybe(str),
+)(str)
