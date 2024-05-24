@@ -18,3 +18,8 @@ create :: String -> Environment
 export create = (seedString) => {
   return { counter: makeCounter(), seed: generateFromString(seedString), creatures: {{}} }
 }
+
+iter :: Environment -> Environment
+export iter = (env) => {
+  return env
+}

@@ -27,28 +27,28 @@ main = () => {
   counter = makeCounter()
 
   /*
-            jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
-            skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
-            spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
-            glynk = original(
-              [GENES.red, GENES.calico, GENES.albino],
-              counter(),
-              "Glynk",
-              { focus: #[0, 0], status: Content },
-            )
-            IO.pTrace(
-              "creatures!",
-              #[
-                reproduce(seed, "Comini", counter(), jocomo, skimini),
-                reproduce(seed, "Jikimo", counter(), jocomo, skimini),
-                reproduce(seed, "Jokomi", counter(), jocomo, skimini),
-                reproduce(seed, "Spantini", counter(), spantix, skimini),
-                reproduce(seed, "Glyntix", counter(), glynk, spantix),
-                reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
-                reproduce(seed, "Jocontix", counter(), jocomo, spantix),
-              ],
-            )
-          */
+              jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
+              skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
+              spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
+              glynk = original(
+                [GENES.red, GENES.calico, GENES.albino],
+                counter(),
+                "Glynk",
+                { focus: #[0, 0], status: Content },
+              )
+              IO.pTrace(
+                "creatures!",
+                #[
+                  reproduce(seed, "Comini", counter(), jocomo, skimini),
+                  reproduce(seed, "Jikimo", counter(), jocomo, skimini),
+                  reproduce(seed, "Jokomi", counter(), jocomo, skimini),
+                  reproduce(seed, "Spantini", counter(), spantix, skimini),
+                  reproduce(seed, "Glyntix", counter(), glynk, spantix),
+                  reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
+                  reproduce(seed, "Jocontix", counter(), jocomo, spantix),
+                ],
+              )
+            */
   names = List.repeatWith(
     (_) => pipe(
       Language.wordlike(boolean(seed)),

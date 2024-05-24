@@ -1,13 +1,59 @@
+import type { Maybe } from "Maybe"
 import type { Random } from "Random"
 
 import { GT, LT } from "Compare"
+import { equals } from "Function"
 import List from "List"
-import { fromMaybe } from "Maybe"
-import { pick } from "Random"
+import { Just, Nothing, fromMaybe } from "Maybe"
+import { boolean, float, pick } from "Random"
 
 
 
 export type Gene = Gene(Short, Float, String)
+
+export ALL_GENES = [
+  // patterns 0
+  Gene(0_s, 0.0, "Spotted"),
+  Gene(0_s, 0.1, "Striped"),
+  Gene(0_s, 0.1, "Banded"),
+  Gene(0_s, 0.1, "Camoflaged"),
+  Gene(0_s, 0.2, "Calico"),
+  Gene(0_s, 0.5, "Solid"),
+  // colors 1
+  Gene(1_s, 0.0, "Red"),
+  Gene(1_s, 0.0, "Orange"),
+  Gene(1_s, 0.0, "Yellow"),
+  Gene(1_s, 0.0, "Green"),
+  Gene(1_s, 0.0, "Blue"),
+  Gene(1_s, 0.0, "Purple"),
+  Gene(1_s, 0.0, "Black"),
+  Gene(1_s, 0.0, "Gray"),
+  Gene(1_s, 0.0, "White"),
+  // colors 2
+  Gene(2_s, 0.0, "Red"),
+  Gene(2_s, 0.0, "Orange"),
+  Gene(2_s, 0.0, "Yellow"),
+  Gene(2_s, 0.0, "Green"),
+  Gene(2_s, 0.0, "Blue"),
+  Gene(2_s, 0.0, "Purple"),
+  Gene(2_s, 0.0, "Black"),
+  Gene(2_s, 0.0, "Gray"),
+  Gene(2_s, 0.0, "White"),
+  // pigment 3
+  Gene(3_s, 1.0, "Albino"),
+  Gene(3_s, 0.2, "Vitiligo"),
+  // skin 4
+  Gene(4_s, 0.0, "Smooth"),
+  Gene(4_s, 0.1, "Scaly"),
+  Gene(4_s, 0.1, "Ridged"),
+  Gene(4_s, 0.1, "Spiky"),
+  Gene(4_s, 0.2, "Furry"),
+  Gene(4_s, 0.3, "Armored"),
+  // cool? 5
+  Gene(5_s, 0.0, "Poisonous"),
+  Gene(5_s, 0.5, "Venomous"),
+  Gene(5_s, 0.1, "Electric"),
+]
 
 geneIndex :: Gene -> Short
 export geneIndex = where {
@@ -27,8 +73,21 @@ export geneName = where {
     n
 }
 
+
 sameGeneIndex :: Gene -> Gene -> Boolean
-sameGeneIndex = (a, b) => geneIndex(a) == geneIndex(b)
+export sameGeneIndex = (a, b) => geneIndex(a) == geneIndex(b)
+
+sameGeneExpression :: Gene -> Gene -> Boolean
+export sameGeneExpression = (a, b) => geneExpression(a) == geneExpression(b)
+
+sameGeneName :: Gene -> Gene -> Boolean
+export sameGeneName = (a, b) => geneExpression(a) == geneExpression(b)
+
+sameGene :: Gene -> Gene -> Boolean
+sameGene = (a, b) => where(#[a, b]) {
+  #[Gene(a1, a2, a3), Gene(b1, b2, b3)] =>
+    a1 == b1 && a2 == b2 && a3 == b3
+}
 
 dominantGene :: Random -> Gene -> Gene -> Gene
 dominantGene = (r, a, b) => {
@@ -37,10 +96,7 @@ dominantGene = (r, a, b) => {
   return if (ax > bx) {
     a
   } else if (ax == bx) {
-    pipe(
-      pick([a, b]),
-      fromMaybe(a),
-    )(r)
+    boolean(r) ? a : b
   } else {
     b
   }
@@ -75,14 +131,31 @@ export splice = (r, as, bs) => pipe(
   ),
 )(as)
 
+// remove
+// add
+// swap
+// none
+mutate :: Random -> List Gene -> List Gene
+export mutate = (r, genes) => {
+  chance = float(r)
+  doNothing = fromMaybe(genes)
+  // remove
+  return if (chance < 1 / 10) {
+    pipe(
+      pick(genes),
+      map((p) => List.reject(sameGene(p), genes)),
+      doNothing,
+    )(r)
+  } else if (chance < 1 / 5) {
+    pipe(
+      pick(ALL_GENES),
+      map(List.append($, genes)),
+      doNothing,
+    )(r)
+  } else {
+    // } else if (chance < 2 / 5) {
+    //   swapGenes(r, genes)
 
-
-ALL_GENES = [
-  Gene(0_s, 0.0, "Spotted"),
-  Gene(0_s, 0.1, "Striped"),
-  Gene(0_s, 0.2, "Calico"),
-  Gene(1_s, 0.0, "Yellow"),
-  Gene(1_s, 0.0, "White"),
-  Gene(1_s, 0.0, "Red"),
-  Gene(2_s, 0.0, "Albino"),
-]
+    genes
+  }
+}
