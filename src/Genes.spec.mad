@@ -1,0 +1,199 @@
+import type { Gene } from "@/Genes"
+
+import { EQ } from "Compare"
+import List from "List"
+import { Just, Nothing } from "Maybe"
+import { generateFromString } from "Random"
+import { assertEquals, test } from "Test"
+
+import {
+  ALL_GENES,
+  Gene,
+  dominantGene,
+  filterByGeneIndex,
+  geneExpression,
+  geneIndex,
+  geneName,
+  hasGeneByIndex,
+  justSameGene,
+  mutate,
+  mutateAdd,
+  mutateDrop,
+  pickByGeneIndex,
+  replaceGene,
+  sameGene,
+  sameGeneExpression,
+  sameGeneIndex,
+  sameGeneName,
+  sortGene,
+  sortGenes,
+  splice,
+  swapFromPool,
+} from "@/Genes"
+
+
+
+test("geneIndex", () => assertEquals(geneIndex(Gene(6_s, 0, "test")), 6_s))
+test("geneExpression", () => assertEquals(geneExpression(Gene(6_s, 0.4, "test")), 0.4))
+test("geneName", () => assertEquals(geneName(Gene(6_s, 0, "test")), "test"))
+
+test(
+  "sameGeneIndex",
+  () => assertEquals(sameGeneIndex(Gene(0, 0, "test"), Gene(0, 0, "test")), true),
+)
+test(
+  "sameGeneExpression",
+  () => assertEquals(sameGeneExpression(Gene(0, 0, "test"), Gene(0, 0, "test")), true),
+)
+test("sameGeneName", () => assertEquals(sameGeneName(Gene(0, 0, "test"), Gene(0, 0, "test")), true))
+test("sameGene", () => assertEquals(sameGene(Gene(0, 0, "test"), Gene(0, 0, "test")), true))
+
+test(
+  "justSameGene",
+  () => do {
+    g = Just(Gene(0, 0, "test"))
+    _ <- assertEquals(justSameGene(g, Nothing), false)
+    return assertEquals(justSameGene(g, g), true)
+  },
+)
+
+test(
+  "dominantGene",
+  () => do {
+    seed = generateFromString("test")
+    a = Gene(0, 0, "a")
+    b = Gene(0, 0, "b")
+    c = Gene(0, 0.5, "c")
+    _ <- assertEquals(dominantGene(seed, a, c), c)
+    _ <- assertEquals(dominantGene(seed, c, a), c)
+    return assertEquals(dominantGene(seed, a, b), a)
+  },
+)
+
+test("hasGeneByIndex", () => assertEquals(hasGeneByIndex(ALL_GENES, Gene(0, 0, "test")), true))
+
+test("sortGene", () => assertEquals(sortGene(Gene(0, 0, "a"), Gene(0, 0, "b")), EQ))
+test(
+  "dominantGene",
+  () => do {
+    seed = generateFromString("test2")
+    a = Gene(0, 0, "a")
+    b = Gene(0, 0, "b")
+    return assertEquals(dominantGene(seed, a, b), b)
+  },
+)
+
+test(
+  "splice",
+  () => do {
+    a = [Gene(0, 0, "testA0"), Gene(1, 0, "testA1")]
+    b = [Gene(0, 0.5, "testB0"), Gene(1, 0.5, "testB1")]
+    seed = generateFromString("test")
+    return assertEquals(sortGenes(splice(seed, a, b)), sortGenes(b))
+  },
+)
+
+test(
+  "filterByGeneIndex",
+  () => assertEquals(
+    filterByGeneIndex(Gene(0_s, 0, "test"), ALL_GENES),
+    [
+      Gene(0, 0, "Spotted"),
+      Gene(0, 0.1, "Striped"),
+      Gene(0, 0.1, "Banded"),
+      Gene(0, 0.1, "Camoflaged"),
+      Gene(0, 0.2, "Calico"),
+      Gene(0, 0.5, "Solid"),
+    ],
+  ),
+)
+
+test(
+  "pickByGeneIndex",
+  () => assertEquals(
+    pickByGeneIndex(generateFromString("test"), Gene(0, 0, "Spotted"), ALL_GENES),
+    Just(Gene(0, 0.1, "Camoflaged")),
+  ),
+)
+
+test("replaceGene", () => assertEquals(replaceGene(Nothing, Nothing, []), []))
+
+test(
+  "swapFromPool",
+  () => do {
+    seed = generateFromString("test")
+    _ <- assertEquals(swapFromPool(seed, [], []), [])
+    _ <- assertEquals(
+      swapFromPool(seed, ALL_GENES, [Gene(0, 0, "Spotted"), Gene(1, 0, "Red")]),
+      [Gene(0, 0, "Spotted"), Gene(1, 0, "Purple")],
+    )
+    return assertEquals(
+      swapFromPool(
+        seed,
+        ALL_GENES,
+        [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(2, 0, "Gray"), Gene(4, 0, "Smooth")],
+      ),
+      [Gene(0, 0, "Spotted"), Gene(1, 0, "Blue"), Gene(2, 0, "Gray"), Gene(4, 0, "Smooth")],
+    )
+  },
+)
+
+test(
+  "mutateDrop",
+  () => assertEquals(mutateDrop(generateFromString("test"), [Gene(0, 0, "test")]), []),
+)
+
+test(
+  "mutateAdd",
+  () => assertEquals(mutateAdd(generateFromString("test"), ALL_GENES, []), [Gene(2, 0, "Purple")]),
+)
+
+test(
+  "mutate",
+  () => do {
+    seed = generateFromString("test")
+    genes = [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(2, 0, "Gray"), Gene(4, 0, "Smooth")]
+    out = List.repeatWith((_) => mutate(seed, genes), 30)
+    return assertEquals(
+      out,
+      [
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        [Gene(0, 0, "Spotted"), Gene(2, 0, "Gray"), Gene(4, 0, "Smooth")],
+        genes,
+        genes,
+        genes,
+        genes,
+        genes,
+        [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
+        genes,
+        genes,
+        genes,
+        genes,
+        [Gene(0, 0, "Spotted"), Gene(1, 0, "Yellow"), Gene(2, 0, "Gray"), Gene(4, 0, "Smooth")],
+        genes,
+        genes,
+        genes,
+        genes,
+        [
+          Gene(0, 0, "Spotted"),
+          Gene(1, 0, "Red"),
+          Gene(2, 0, "Gray"),
+          Gene(4, 0, "Smooth"),
+          Gene(2, 0, "Black"),
+        ],
+        [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
+      ],
+    )
+  },
+)

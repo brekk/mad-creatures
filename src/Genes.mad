@@ -1,11 +1,13 @@
+import type { Comparison } from "Compare"
 import type { Maybe } from "Maybe"
 import type { Random } from "Random"
 
-import { GT, LT } from "Compare"
+import { EQ, GT, LT } from "Compare"
 import { equals } from "Function"
 import List from "List"
-import { Just, Nothing, fromMaybe } from "Maybe"
+import { Just, Nothing, fromMaybe, isJust } from "Maybe"
 import { boolean, float, pick } from "Random"
+import Short from "Short"
 
 
 
@@ -73,6 +75,25 @@ export geneName = where {
     n
 }
 
+sortGene :: Gene -> Gene -> Comparison
+export sortGene = (a, b) => {
+  aI = geneIndex(a)
+  bI = geneIndex(b)
+  aE = Short.fromFloat(geneExpression(a))
+  bE = Short.fromFloat(geneExpression(b))
+  aX = aI + aE
+  bX = bI + bE
+  return if (aX == bX) {
+    EQ
+  } else if (aX > bX) {
+    GT
+  } else {
+    LT
+  }
+}
+
+sortGenes :: List Gene -> List Gene
+export sortGenes = List.sortBy(sortGene)
 
 sameGeneIndex :: Gene -> Gene -> Boolean
 export sameGeneIndex = (a, b) => geneIndex(a) == geneIndex(b)
@@ -84,13 +105,22 @@ sameGeneName :: Gene -> Gene -> Boolean
 export sameGeneName = (a, b) => geneExpression(a) == geneExpression(b)
 
 sameGene :: Gene -> Gene -> Boolean
-sameGene = (a, b) => where(#[a, b]) {
+export sameGene = (a, b) => where(#[a, b]) {
   #[Gene(a1, a2, a3), Gene(b1, b2, b3)] =>
     a1 == b1 && a2 == b2 && a3 == b3
 }
 
+justSameGene :: Maybe Gene -> Maybe Gene -> Boolean
+export justSameGene = (a, b) => where(#[a, b]) {
+  #[Just(x), Just(y)] =>
+    sameGene(x, y)
+
+  _ =>
+    false
+}
+
 dominantGene :: Random -> Gene -> Gene -> Gene
-dominantGene = (r, a, b) => {
+export dominantGene = (r, a, b) => {
   ax = geneExpression(a)
   bx = geneExpression(b)
   return if (ax > bx) {
@@ -103,7 +133,7 @@ dominantGene = (r, a, b) => {
 }
 
 hasGeneByIndex :: List Gene -> Gene -> Boolean
-hasGeneByIndex = (gs, g) => pipe(
+export hasGeneByIndex = (gs, g) => pipe(
   map(geneIndex),
   List.includes(geneIndex(g)),
 )(gs)
@@ -131,31 +161,87 @@ export splice = (r, as, bs) => pipe(
   ),
 )(as)
 
-// remove
-// add
-// swap
-// none
+filterByGeneIndex :: Gene -> List Gene -> List Gene
+export filterByGeneIndex = (gene, genes) => pipe(
+  geneIndex,
+  (idx) => List.filter(
+    pipe(
+      geneIndex,
+      equals(idx),
+    ),
+    genes,
+  ),
+)(gene)
+
+pickByGeneIndex :: Random -> Gene -> List Gene -> Maybe Gene
+export pickByGeneIndex = (r, g, genes) => pipe(
+  filterByGeneIndex(g),
+  pick($, r),
+)(genes)
+
+
+import IO from "IO"
+
+
+
+replaceGene :: Maybe Gene -> Maybe Gene -> List Gene -> List Gene
+export replaceGene = (picked, matched, genes) => where(#[picked, matched]) {
+  #[Just(p), Just(m)] =>
+    map((y) => sameGene(y, p) ? m : y, genes)
+
+  _ =>
+    genes
+}
+
+
+swapFromPoolWithLimit :: Integer -> Random -> List Gene -> List Gene -> List Gene
+export swapFromPoolWithLimit = (limit, r, pool, genes) => if (
+  List.length(genes) < 2 || List.length(pool) < 2
+) {
+  []
+} else do {
+  picked = pick(genes, r)
+  matched = Nothing
+  count = 0
+  pull = () => {
+    count := count + 1
+    matched := chain(pickByGeneIndex(r, $, pool), picked)
+  }
+  check = () => !isJust(matched) && !justSameGene(matched, picked) && count < limit
+  while(check()) {
+    pull()
+  }
+  return replaceGene(picked, matched, genes)
+}
+export swapFromPool = swapFromPoolWithLimit(10)
+
+mutateDrop :: Random -> List Gene -> List Gene
+export mutateDrop = (r, genes) => pipe(
+  pick(genes),
+  map((p) => List.reject(sameGene(p), genes)),
+  fromMaybe(genes),
+)(r)
+
+mutateAdd :: Random -> List Gene -> List Gene -> List Gene
+export mutateAdd = (r, pool, genes) => pipe(
+  pick(pool),
+  map(List.append($, genes)),
+  fromMaybe(genes),
+)(r)
+
 mutate :: Random -> List Gene -> List Gene
 export mutate = (r, genes) => {
   chance = float(r)
-  doNothing = fromMaybe(genes)
-  // remove
-  return if (chance < 1 / 10) {
-    pipe(
-      pick(genes),
-      map((p) => List.reject(sameGene(p), genes)),
-      doNothing,
-    )(r)
-  } else if (chance < 1 / 5) {
-    pipe(
-      pick(ALL_GENES),
-      map(List.append($, genes)),
-      doNothing,
-    )(r)
+  return if (chance < (1 / 10)) {
+    // remove
+    mutateDrop(r, genes)
+  } else if (chance < (1 / 5)) {
+    // add
+    mutateAdd(r, ALL_GENES, genes)
+  } else if (chance < (2 / 5)) {
+    // swap
+    swapFromPool(r, ALL_GENES, genes)
   } else {
-    // } else if (chance < 2 / 5) {
-    //   swapGenes(r, genes)
-
     genes
   }
 }
