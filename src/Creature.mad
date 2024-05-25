@@ -3,18 +3,19 @@ import type { Random } from "Random"
 
 import type { Gene } from "@/Genes"
 
+import Dict from "Dictionary"
 import List from "List"
 import { Just, Nothing } from "Maybe"
+import Set from "Set"
 
 import { splice } from "@/Genes"
 
 
 
 export type Mood = Content | Angry | Sad | Tired | Happy | Confused | Excited
-export alias Internals = { focus :: #[Integer, Integer], status :: Mood }
-export type Creature = Creature(Short, Short, List Gene, Short, String, Internals) | Ghost
+export type Creature = Creature(Short, Short, List Gene, Short, String) | Ghost
 
-export DEFAULT_PARTIAL_INTERNALS = { focus: #[-1, -1], status: Content }
+derive Comparable Creature
 
 
 isGhost :: Creature -> Boolean
@@ -26,22 +27,13 @@ export isGhost = where {
     false
 }
 
-internals :: Creature -> Maybe Internals
-export internals = where {
-  Ghost =>
-    Nothing
-
-  Creature(_, _, _, _, _, x) =>
-    Just(x)
-}
-
 
 parent1 :: Creature -> Short
 export parent1 = where {
   Ghost =>
     -1
 
-  Creature(s, _, _, _, _, _) =>
+  Creature(s, _, _, _, _) =>
     s
 }
 
@@ -50,22 +42,25 @@ export parent2 = where {
   Ghost =>
     -1
 
-  Creature(_, s, _, _, _, _) =>
+  Creature(_, s, _, _, _) =>
     s
 }
+
+// get :: Dictionary Short Creature -> Short -> Maybe Creature
+// get = (lookup, i) => Dict.get(i, lookup)
 
 genes :: Creature -> List Gene
 export genes = where {
   Ghost =>
     []
 
-  Creature(_, _, g, _, _, _) =>
+  Creature(_, _, g, _, _) =>
     g
 }
 
 name :: Creature -> String
 export name = where {
-  Creature(_, _, _, _, n, _) =>
+  Creature(_, _, _, _, n) =>
     n
 
   Ghost =>
@@ -73,14 +68,45 @@ export name = where {
 }
 id :: Creature -> Short
 export id = where {
-  Creature(_, _, _, i, _, _) =>
+  Creature(_, _, _, i, _) =>
     i
 
   Ghost =>
     -1
 }
 
-original :: List Gene -> Short -> String -> Internals -> Creature
+parents :: Dictionary Short Creature -> Creature -> #[Maybe Creature, Maybe Creature]
+export parents = (lookup, c) => {
+  getter = Dict.get($, lookup)
+  p1 = parent1(c)
+  p2 = parent2(c)
+  return #[getter(p1), getter(p2)]
+}
+
+ancestors :: Dictionary Short Creature -> Creature -> Set Creature
+export ancestors = (lookup, c) => {
+  get = parents(lookup)
+  walk :: Set Creature -> Creature -> Set Creature
+  walk = (set, creature) => where(get(creature)) {
+    #[Just(a), Just(b)] =>
+      pipe(
+        Set.insert(a),
+        Set.insert(b),
+      )(set)
+
+    #[Just(a), Nothing] =>
+      Set.insert(a, set)
+
+    #[Nothing, Just(b)] =>
+      Set.insert(b, set)
+
+    _ =>
+      set
+  }
+  return walk(Set.empty, c)
+}
+
+original :: List Gene -> Short -> String -> Creature
 export original = Creature(-1, -1)
 
 
@@ -89,5 +115,5 @@ export reproduce = (r, newName, s, a, b) => {
   ag = genes(a)
   bg = genes(b)
   mixed = splice(r, ag, bg)
-  return Creature(id(a), id(b), mixed, s, newName, DEFAULT_PARTIAL_INTERNALS)
+  return Creature(id(a), id(b), mixed, s, newName)
 }

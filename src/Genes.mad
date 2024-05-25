@@ -12,6 +12,7 @@ import Short from "Short"
 
 
 export type Gene = Gene(Short, Float, String)
+derive Comparable Gene
 
 export ALL_GENES = [
   // patterns 0
