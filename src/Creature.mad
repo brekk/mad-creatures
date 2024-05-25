@@ -1,9 +1,10 @@
+import type { Maybe } from "Maybe"
 import type { Random } from "Random"
 
 import type { Gene } from "@/Genes"
 
 import List from "List"
-import R from "Random"
+import { Just, Nothing } from "Maybe"
 
 import { splice } from "@/Genes"
 
@@ -25,6 +26,34 @@ export isGhost = where {
     false
 }
 
+internals :: Creature -> Maybe Internals
+export internals = where {
+  Ghost =>
+    Nothing
+
+  Creature(_, _, _, _, _, x) =>
+    Just(x)
+}
+
+
+parent1 :: Creature -> Short
+export parent1 = where {
+  Ghost =>
+    -1
+
+  Creature(s, _, _, _, _, _) =>
+    s
+}
+
+parent2 :: Creature -> Short
+export parent2 = where {
+  Ghost =>
+    -1
+
+  Creature(_, s, _, _, _, _) =>
+    s
+}
+
 genes :: Creature -> List Gene
 export genes = where {
   Ghost =>
@@ -34,30 +63,31 @@ export genes = where {
     g
 }
 
-creatureName :: Creature -> String
-export creatureName = where {
+name :: Creature -> String
+export name = where {
   Creature(_, _, _, _, n, _) =>
     n
 
   Ghost =>
     "?"
 }
-creatureId :: Creature -> Short
-export creatureId = where {
+id :: Creature -> Short
+export id = where {
   Creature(_, _, _, i, _, _) =>
     i
 
   Ghost =>
-    -1_s
+    -1
 }
 
 original :: List Gene -> Short -> String -> Internals -> Creature
-export original = Creature(-1_s, -1_s)
+export original = Creature(-1, -1)
+
 
 reproduce :: Random -> String -> Short -> Creature -> Creature -> Creature
-export reproduce = (r, name, s, a, b) => {
+export reproduce = (r, newName, s, a, b) => {
   ag = genes(a)
   bg = genes(b)
   mixed = splice(r, ag, bg)
-  return Creature(creatureId(a), creatureId(b), mixed, s, name, DEFAULT_PARTIAL_INTERNALS)
+  return Creature(id(a), id(b), mixed, s, newName, DEFAULT_PARTIAL_INTERNALS)
 }

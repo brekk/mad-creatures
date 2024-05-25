@@ -1,0 +1,120 @@
+import { Just, Nothing } from "Maybe"
+import { generateFromString } from "Random"
+import { assertEquals, test } from "Test"
+
+import {
+  Content,
+  Creature,
+  DEFAULT_PARTIAL_INTERNALS,
+  Ghost,
+  genes,
+  id,
+  internals,
+  isGhost,
+  name,
+  original,
+  parent1,
+  parent2,
+  reproduce,
+} from "@/Creature"
+import { Gene } from "@/Genes"
+
+
+
+critter = original([Gene(0, 0, "test")], 0, "nice", DEFAULT_PARTIAL_INTERNALS)
+
+test(
+  "isGhost",
+  () => do {
+    _ <- assertEquals(isGhost(critter), false)
+    return assertEquals(isGhost(Ghost), true)
+  },
+)
+test(
+  "genes",
+  () => do {
+    _ <- assertEquals(genes(critter), [Gene(0, 0, "test")])
+    return assertEquals(genes(Ghost), [])
+  },
+)
+
+test(
+  "name",
+  () => do {
+    _ <- assertEquals(name(critter), "nice")
+    return assertEquals(name(Ghost), "?")
+  },
+)
+
+test(
+  "id",
+  () => do {
+    _ <- assertEquals(id(critter), 0)
+    return assertEquals(id(Ghost), -1)
+  },
+)
+
+test(
+  "parent1",
+  () => do {
+    _ <- assertEquals(parent1(critter), -1)
+    return assertEquals(parent1(Ghost), -1)
+  },
+)
+
+test(
+  "parent2",
+  () => do {
+    _ <- assertEquals(parent2(critter), -1)
+    return assertEquals(parent2(Ghost), -1)
+  },
+)
+
+test(
+  "internals",
+  () => do {
+    _ <- assertEquals(internals(critter), Just(DEFAULT_PARTIAL_INTERNALS))
+    return assertEquals(internals(Ghost), Nothing)
+  },
+)
+
+test(
+  "reproduce",
+  () => do {
+    seed = generateFromString("test")
+    a = Creature(
+      1,
+      2,
+      [
+        Gene(0, 0, "Spotted"),
+        Gene(1, 0, "Red"),
+        Gene(2, 0, "Gray"),
+        Gene(4, 0, "Smooth"),
+        Gene(2, 0, "Black"),
+      ],
+      3,
+      "a",
+      DEFAULT_PARTIAL_INTERNALS,
+    )
+
+    b = Creature(
+      4,
+      5,
+      [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
+      6,
+      "b",
+      DEFAULT_PARTIAL_INTERNALS,
+    )
+    return assertEquals(
+      reproduce(seed, "newname", 7, a, b),
+      Creature(
+        3,
+        6,
+        [Gene(4, 0, "Smooth"), Gene(2, 0, "Black"), Gene(1, 0, "Red"), Gene(0, 0, "Spotted")],
+        7,
+        "newname",
+        { focus: #[-1, -1], status: Content },
+      ),
+    )
+  },
+)
