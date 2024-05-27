@@ -298,18 +298,18 @@ export mutate = (r, genes) => {
   }
 }
 
+uniqueByIndex :: List Gene -> Maybe Gene -> List Gene
+export uniqueByIndex = (gs, mG) => where(mG) {
+  Just(g) =>
+    hasGeneByIndex(gs, g) ? gs : List.append(g, gs)
+
+  Nothing =>
+    gs
+}
+
 spontaneous :: Random -> List Gene -> List Gene
 export spontaneous = (r, pool) => pipe(
   integer(4, 11),
   List.repeatWith((_) => pick(pool, r)),
-  List.reduce(
-    (gs, mG) => where(mG) {
-      Just(g) =>
-        hasGeneByIndex(gs, g) ? gs : List.append(g, gs)
-
-      Nothing =>
-        gs
-    },
-    [],
-  ),
+  List.reduce(uniqueByIndex, []),
 )(r)

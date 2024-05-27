@@ -12,7 +12,6 @@ import { splice } from "@/Genes"
 
 
 
-export type Mood = Content | Angry | Sad | Tired | Happy | Confused | Excited
 export type Creature = Creature(Short, Short, List Gene, Short, String) | Ghost
 
 derive Comparable Creature
@@ -86,10 +85,6 @@ export isParent = (p, child) => {
   return rawId == a || rawId == b
 }
 
-import IO from "IO"
-
-
-
 ancestors :: Dictionary Short Creature -> Creature -> Set Creature
 export ancestors = (lookup, c) => {
   ax = []
@@ -137,6 +132,10 @@ export reproduce = (r, newName, s, a, b) => {
   return Creature(id(a), id(b), mixed, s, newName)
 }
 
+clone :: String -> Short -> Creature -> Creature
+export clone = (newName, s, a) => Creature(id(a), -1, genes(a), s, newName)
+
+
 structuredReproduce :: Dictionary Short Creature
   -> Boolean
   -> Random
@@ -145,12 +144,13 @@ structuredReproduce :: Dictionary Short Creature
   -> Creature
   -> Creature
   -> Maybe Creature
-export structuredReproduce = (lookup, noAncestors, r, newName, s, a, b) => if (
-  noAncestors && isAncestor(lookup, a, a)
-) {
-  Nothing
-} else {
-  Just(reproduce(r, newName, s, a, b))
+export structuredReproduce = (lookup, noAncestors, r, newName, s, a, b) => {
+  isAnc = isAncestor(lookup)
+  return if (noAncestors && (isAnc(a, b) || isAnc(b, a))) {
+    Nothing
+  } else {
+    Just(reproduce(r, newName, s, a, b))
+  }
 }
 
 nameFromId :: Dictionary Short Creature -> Short -> String

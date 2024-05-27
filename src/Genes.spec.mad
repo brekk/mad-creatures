@@ -28,7 +28,9 @@ import {
   sortGene,
   sortGenes,
   splice,
+  spontaneous,
   swapFromPool,
+  uniqueByIndex,
 } from "@/Genes"
 
 
@@ -198,5 +200,32 @@ test(
         [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
       ],
     )
+  },
+)
+
+test(
+  "spontaneous",
+  () => do {
+    seed = generateFromString("test")
+    _ <- assertEquals(spontaneous(seed, []), [])
+    return assertEquals(
+      spontaneous(seed, ALL_GENES),
+      [
+        Gene(6, 0.3, "Prehensile-snouted"),
+        Gene(7, 0.4, "Parietal-eyed"),
+        Gene(0, 0.1, "Banded"),
+        Gene(11, 0.2, "Undulatory"),
+        Gene(5, 0.1, "Venomous"),
+      ],
+    )
+  },
+)
+
+test(
+  "uniqueByIndex",
+  () => do {
+    gene = Gene(0, 0, "test")
+    _ <- assertEquals(uniqueByIndex([], Nothing), [])
+    return assertEquals(uniqueByIndex([], Just(gene)), [gene])
   },
 )
