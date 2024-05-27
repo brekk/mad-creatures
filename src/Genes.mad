@@ -285,13 +285,10 @@ mutate :: Random -> List Gene -> List Gene
 export mutate = (r, genes) => {
   chance = float(r)
   return if (chance < (1 / 10)) {
-    // remove
     mutateDrop(r, genes)
   } else if (chance < (1 / 5)) {
-    // add
     mutateAdd(r, ALL_GENES, genes)
   } else if (chance < (2 / 5)) {
-    // swap
     swapFromPool(r, ALL_GENES, genes)
   } else {
     genes

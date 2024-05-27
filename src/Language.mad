@@ -2,22 +2,17 @@ import type { Maybe } from "Maybe"
 import type { Random } from "Random"
 
 import Dict from "Dictionary"
-import IO from "IO"
 import List from "List"
 import { Just, Nothing, fromMaybe } from "Maybe"
 import { boolean, integer, pick } from "Random"
 import String from "String"
 
-import { ALPHABET, CONSONANTS, LETTER_HEADS, LETTER_TAILS, VOWELS } from "./Constants"
-import { possible } from "./Random"
+import { ALPHABET, LETTER_HEADS, LETTER_TAILS } from "./Constants"
 
 
-
-vowel = pick(VOWELS)
-consonant = pick(CONSONANTS)
 
 select :: Random -> Dictionary Char (List Char) -> Char -> Maybe Char
-select = (r, dict, c) => pipe(
+export select = (r, dict, c) => pipe(
   Dict.get($, dict),
   chain(pick($, r)),
 )(c)
@@ -33,10 +28,7 @@ export before = (r, c) => pipe(
 )(c)
 
 chars :: Random -> Integer -> List (Maybe Char)
-export chars = (r, count) => pipe(
-  List.range(0),
-  map((_) => pick(ALPHABET, r)),
-)(count)
+export chars = (r, count) => List.repeatWith((_) => pick(ALPHABET, r), count)
 
 canFollow :: Char -> Char -> Boolean
 export canFollow = (a, b) => pipe(
@@ -53,7 +45,7 @@ export canPrecede = (a, b) => pipe(
 )(b)
 
 charWalkForward :: List (Maybe Char) -> String
-charWalkForward = pipe(
+export charWalkForward = pipe(
   List.reduce(
     (data, j) => {
       return where(#[data.last, j]) {
@@ -73,7 +65,7 @@ charWalkForward = pipe(
 )
 
 charWalkBackward :: List (Maybe Char) -> String
-charWalkBackward = (raw) => pipe(
+export charWalkBackward = (raw) => pipe(
   List.reverse,
   List.reduce(
     (data, j) => {
@@ -102,6 +94,15 @@ charWalkBackward = (raw) => pipe(
 tripleVowel :: String -> Boolean
 export tripleVowel = String.match("[aeiouAEIOU][aeiouAEIOU][aeiouAEIOU]")
 
+character :: Random -> Maybe Char -> List (Maybe Char)
+export character = (r, m) => where(m) {
+  Just(x) =>
+    boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
+
+  Nothing =>
+    []
+}
+
 wordlike :: Boolean -> Random -> String
 export wordlike = (mode, r) => {
   count = integer(3, 7, r)
@@ -110,15 +111,7 @@ export wordlike = (mode, r) => {
   algo = mode ? charWalkForward : charWalkBackward
   while(String.length(n) < 4) {
     pipe(
-      map(
-        where {
-          Just(x) =>
-            boolean(r) ? [Just(x), after(r, x)] : [before(r, x), Just(x)]
-
-          Nothing =>
-            []
-        },
-      ),
+      map(character(r)),
       List.flatten,
       algo,
       (newName) => {

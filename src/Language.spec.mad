@@ -1,0 +1,179 @@
+import List from "List"
+import { Just, Nothing, fromMaybe } from "Maybe"
+import { generateFromString } from "Random"
+import String from "String"
+import { assertEquals, test } from "Test"
+
+import {
+  after,
+  backword,
+  before,
+  canFollow,
+  canPrecede,
+  capitalize,
+  charWalkBackward,
+  charWalkForward,
+  character,
+  chars,
+  forword,
+  name,
+  select,
+  tripleVowel,
+  wordlike,
+} from "@/Language"
+
+
+
+seed = () => generateFromString("test")
+
+test("after", () => assertEquals(after(seed(), 'a'), Just('p')))
+test("before", () => assertEquals(before(seed(), 'a'), Just('o')))
+
+test(
+  "chars",
+  () => assertEquals(
+    pipe(
+      chars(seed()),
+      map(fromMaybe('?')),
+      String.fromList,
+    )(10),
+    "pqlmntnxst",
+  ),
+)
+
+test("canFollow", () => assertEquals(canFollow('p', 'q'), false))
+test("canPrecede", () => assertEquals(canPrecede('u', 'p'), true))
+test("charWalkForward", () => assertEquals(charWalkForward([Nothing, Nothing]), ""))
+test(
+  "charWalkBackward",
+  () => do {
+    _ <- assertEquals(charWalkBackward([Just('a'), Just('b')]), "a")
+    _ <- assertEquals(charWalkBackward([Just('b'), Nothing]), "b")
+    return assertEquals(charWalkBackward([Nothing, Nothing]), "")
+  },
+)
+
+test("character", () => assertEquals(character(seed(), Nothing), []))
+
+test(
+  "forword",
+  () => do {
+    mySeed = generateFromString("test")
+    return assertEquals(
+      List.repeatWith((_) => forword(mySeed), 50),
+      [
+        "quloimeno",
+        "tukli",
+        "petau",
+        "nidehueyse",
+        "mudro",
+        "fobuowix",
+        "nihohou",
+        "lihuflubo",
+        "bamudorou",
+        "apekhayog",
+        "voipasajudar",
+        "uromuy",
+        "azescaur",
+        "utifor",
+        "pafocevu",
+        "egrudiherip",
+        "neicexeke",
+        "xexailinaxiz",
+        "dixaumohe",
+        "ajajib",
+        "quhozisu",
+        "xuluyuku",
+        "inuy",
+        "ateoganiz",
+        "atirh",
+        "powuivigal",
+        "vaomosi",
+        "bipikajil",
+        "ezheimu",
+        "whazixu",
+        "phodoogajisq",
+        "arivimuifasod",
+        "trud",
+        "ubulu",
+        "usuowup",
+        "egemoore",
+        "lajis",
+        "oixopipig",
+        "veocegek",
+        "uzibo",
+        "ookileri",
+        "ehimid",
+        "flavuzu",
+        "xumavu",
+        "ekieroozeoco",
+        "majikoow",
+        "olakaipak",
+        "quepufril",
+        "mufieveip",
+        "cobuze",
+      ],
+    )
+  },
+)
+test(
+  "backword",
+  () => do {
+    mySeed = generateFromString("test")
+    return assertEquals(
+      List.repeatWith((_) => backword(mySeed), 50),
+      [
+        "ulimeno",
+        "otekano",
+        "niyodeluese",
+        "muxo",
+        "foayuotio",
+        "niuhoho",
+        "lihulubo",
+        "bamudoro",
+        "acehpayo",
+        "viopasuda",
+        "urbomu",
+        "apecu",
+        "utiko",
+        "pamoce",
+        "erudiherio",
+        "beiyexeze",
+        "xexialinaxi",
+        "dixupohe",
+        "ouyee",
+        "gico",
+        "ulunukuet",
+        "akiro",
+        "miuzie",
+        "biroveicux",
+        "unafue",
+        "leteur",
+        "lusec",
+        "imagivimuo",
+        "inikirp",
+        "zuruepac",
+        "eamayoupi",
+        "sudi",
+        "azaso",
+        "ihoo",
+        "eiveherio",
+        "ihodima",
+        "kuxo",
+        "afoy",
+        "cusoofopuca",
+        "vihrike",
+        "tajami",
+        "venivelelonaz",
+        "ufualifaf",
+        "yemusuwei",
+        "kixif",
+        "axoyedo",
+        "lkue",
+        "ukocimeuk",
+        "nosoebiguz",
+        "uhkotaxo",
+      ],
+    )
+  },
+)

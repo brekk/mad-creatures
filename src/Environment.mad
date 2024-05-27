@@ -3,7 +3,6 @@ import type { Random } from "Random"
 import type { Creature } from "@/Creature"
 
 import Dict from "Dictionary"
-import { generateFromString } from "Random"
 
 import { Creature } from "@/Creature"
 import { ALL_GENES, sortGenes, spontaneous } from "@/Genes"

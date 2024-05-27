@@ -1,0 +1,44 @@
+import { generateFromString } from "Random"
+import { assertEquals, test } from "Test"
+
+import { Creature } from "@/Creature"
+import { addRandomCreature, create } from "@/Environment"
+import { Gene } from "@/Genes"
+
+
+
+test(
+  "create",
+  () => do {
+    seed = generateFromString("test")
+    env = create(seed)
+    return assertEquals(env.counter() == 1, true)
+  },
+)
+
+test(
+  "addRandomCreature",
+  () => do {
+    env = create(generateFromString("test"))
+    _ <- assertEquals(env.creatures, {{}})
+    env2 = addRandomCreature(env)
+    return assertEquals(
+      env2.creatures,
+      {{
+        1: Creature(
+          -1,
+          -1,
+          [
+            Gene(6, 0.1, "Horned"),
+            Gene(7, 0.4, "Parietal-eyed"),
+            Gene(9, 0.2, "Setaed"),
+            Gene(11, 0.4, "Multi-legged"),
+            Gene(12, 0.1, "Flagellated"),
+          ],
+          1,
+          "Onalivu",
+        ),
+      }},
+    )
+  },
+)

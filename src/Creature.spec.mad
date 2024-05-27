@@ -247,10 +247,6 @@ test(
   },
 )
 
-import IO from "IO"
-
-
-
 test(
   "structuredReproduce",
   () => do {
@@ -266,7 +262,6 @@ test(
     j = Creature(7, 8, [], 10, "J")
     lookup = {{ 1: a, 2: b, 3: c, 4: d, 5: e, 6: f, 7: g, 8: h, 9: i, 10: j }}
     seed = generateFromString("test")
-    IO.pTrace("...", isAncestor(lookup, a, i))
     _ <- assertEquals(
       structuredReproduce(lookup, true, seed, "test", 11, a, i),
       Just(Creature(1, 9, [], 11, "test")),
