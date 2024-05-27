@@ -35,7 +35,6 @@ export ALL_GENES = [
   // colors 2
   Gene(2, 0.0, "Red"),
   Gene(2, 0.0, "Orange"),
-  Gene(2, 0.0, "Yellow"),
   Gene(2, 0.0, "Green"),
   Gene(2, 0.0, "Blue"),
   Gene(2, 0.0, "Purple"),
@@ -47,13 +46,15 @@ export ALL_GENES = [
   Gene(3, 0.2, "Vitiligo"),
   Gene(3, 0.4, "Chameleonic"),
   // skin 4
-  Gene(4, 0.0, "Smooth"),
   Gene(4, 0.1, "Scaly"),
   Gene(4, 0.1, "Ridged"),
   Gene(4, 0.1, "Spiky"),
   Gene(4, 0.2, "Furry"),
   Gene(4, 0.3, "Armored"),
   Gene(4, 0.3, "Shelled"),
+  Gene(4, 0.5, "Long-furred"),
+  Gene(4, 0.6, "Short-furred"),
+  Gene(4, 0.1, "Hairless"),
   // cool? 5
   Gene(5, 0.2, "Poisonous"),
   Gene(5, 0.1, "Venomous"),
@@ -95,7 +96,6 @@ export ALL_GENES = [
   Gene(11, 0.4, "Multi-legged"),
   Gene(11, 0.05, "Wheeled"),
   Gene(11, 0.1, "Rolling"),
-  Gene(11, 0.1, "Teleportative"),
   Gene(11, 0.2, "Undulatory"),
   Gene(11, 0.3, "Slithering"),
   Gene(11, 0.6, "Side-winding"),
@@ -113,6 +113,12 @@ export ALL_GENES = [
   Gene(12, 0.8, "Undulatory"),
   Gene(12, 0.2, "Hydrofoiled"),
   Gene(12, 0.1, "Drag-powered"),
+  // tails
+  Gene(13, 0.2, "Short-tailed"),
+  Gene(13, 0.3, "Long-tailed"),
+  Gene(13, 0.2, "Stingered"),
+  Gene(13, 0.1, "Scorpion-tailed"),
+  Gene(13, 0.4, "Prehensile-tailed"),
 ]
 
 geneIndex :: Gene -> Short

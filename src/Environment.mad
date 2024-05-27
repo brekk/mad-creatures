@@ -3,8 +3,10 @@ import type { Random } from "Random"
 import type { Creature } from "@/Creature"
 
 import Dict from "Dictionary"
+import { fromMaybe } from "Maybe"
+import { pick } from "Random"
 
-import { Creature } from "@/Creature"
+import { Creature, clone } from "@/Creature"
 import { ALL_GENES, sortGenes, spontaneous } from "@/Genes"
 import { makeCounter } from "@/Helpers"
 import { name } from "@/Language"
@@ -26,13 +28,33 @@ addRandomCreature :: Environment -> Environment
 export addRandomCreature = (env) => {
   id = env.counter()
   genes = sortGenes(spontaneous(env.seed, ALL_GENES))
-  newCreature = Creature(-1, -1, genes, id, name(env.seed))
+  newName = name(env.seed)
+  newCreature = Creature(-1, -1, genes, id, newName)
   return {
     counter: env.counter,
     seed: env.seed,
     creatures: Dict.insert(id, newCreature, env.creatures),
   }
 }
+
+parthenogenesis :: Environment -> Environment
+export parthenogenesis = (env) => {
+  id = env.counter()
+  newName = name(env.seed)
+  creatures = pipe(
+    Dict.values,
+    pick($, env.seed),
+    map(
+      pipe(
+        clone(newName, id),
+        Dict.insert(id, $, env.creatures),
+      ),
+    ),
+    fromMaybe(env.creatures),
+  )(env.creatures)
+  return { counter: env.counter, seed: env.seed, creatures }
+}
+
 
 iter :: Environment -> Environment
 export iter = (env) => {

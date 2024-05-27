@@ -3,8 +3,7 @@ import String from "String"
 
 
 
-export VOWELS = String.toList("aeiou")
-export CONSONANTS = String.toList("bcdfghjklmnpqrstvwxyz")
+VOWELS = String.toList("aeiou")
 export ALPHABET = String.toList("abcdefghijklmnopqrstuvwxyz")
 
 // we only need this because List spreading is borked

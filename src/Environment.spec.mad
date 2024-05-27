@@ -2,7 +2,7 @@ import { generateFromString } from "Random"
 import { assertEquals, test } from "Test"
 
 import { Creature } from "@/Creature"
-import { addRandomCreature, create } from "@/Environment"
+import { addRandomCreature, create, parthenogenesis } from "@/Environment"
 import { Gene } from "@/Genes"
 
 
@@ -29,14 +29,84 @@ test(
           -1,
           -1,
           [
-            Gene(6, 0.1, "Horned"),
-            Gene(7, 0.4, "Parietal-eyed"),
-            Gene(9, 0.2, "Setaed"),
-            Gene(11, 0.4, "Multi-legged"),
-            Gene(12, 0.1, "Flagellated"),
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
           ],
           1,
           "Onalivu",
+        ),
+      }},
+    )
+  },
+)
+
+test(
+  "parthenogenesis",
+  () => do {
+    env = create(generateFromString("test"))
+    _ <- assertEquals(env.creatures, {{}})
+    env2 = pipe(
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      parthenogenesis,
+    )(env)
+    return assertEquals(
+      env2.creatures,
+      {{
+        1: Creature(
+          -1,
+          -1,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          1,
+          "Onalivu",
+        ),
+        2: Creature(
+          -1,
+          -1,
+          [
+            Gene(2, 0, "Green"),
+            Gene(4, 0.1, "Ridged"),
+            Gene(8, 0.6, "Big-eared"),
+            Gene(9, 0.1, "Mandibled"),
+            Gene(11, 0.3, "Jumping"),
+          ],
+          2,
+          "Unaletit",
+        ),
+        3: Creature(
+          -1,
+          -1,
+          [
+            Gene(1, 0, "Purple"),
+            Gene(2, 0, "Red"),
+            Gene(3, 1, "Albino"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          3,
+          "Avureufim",
+        ),
+        4: Creature(
+          2,
+          -1,
+          [
+            Gene(2, 0, "Green"),
+            Gene(4, 0.1, "Ridged"),
+            Gene(8, 0.6, "Big-eared"),
+            Gene(9, 0.1, "Mandibled"),
+            Gene(11, 0.3, "Jumping"),
+          ],
+          4,
+          "Fobuowix",
         ),
       }},
     )

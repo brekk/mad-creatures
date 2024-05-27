@@ -149,7 +149,7 @@ test(
   "mutateAdd",
   () => assertEquals(
     mutateAdd(generateFromString("test"), ALL_GENES, []),
-    [Gene(8, 0.3, "Echolocative")],
+    [Gene(9, 0.3, "Tentacle-faced")],
   ),
 )
 
@@ -195,7 +195,7 @@ test(
           Gene(1, 0, "Red"),
           Gene(2, 0, "Gray"),
           Gene(4, 0, "Smooth"),
-          Gene(9, 0.1, "Mandibled"),
+          Gene(9, 0.2, "Setaed"),
         ],
         [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
       ],
@@ -211,11 +211,12 @@ test(
     return assertEquals(
       spontaneous(seed, ALL_GENES),
       [
-        Gene(6, 0.3, "Prehensile-snouted"),
-        Gene(7, 0.4, "Parietal-eyed"),
-        Gene(0, 0.1, "Banded"),
-        Gene(11, 0.2, "Undulatory"),
-        Gene(5, 0.1, "Venomous"),
+        Gene(7, 0.1, "Cycloptic"),
+        Gene(0, 0.1, "Camoflaged"),
+        Gene(6, 0.3, "Antlered"),
+        Gene(11, 0.2, "Brachiated"),
+        Gene(12, 0.1, "Flagellated"),
+        Gene(5, 0.9, "Non-poisonous"),
       ],
     )
   },
