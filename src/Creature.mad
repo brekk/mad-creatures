@@ -5,7 +5,7 @@ import type { Gene } from "@/Genes"
 
 import Dict from "Dictionary"
 import List from "List"
-import { Just, Nothing } from "Maybe"
+import { Just, Nothing, fromMaybe } from "Maybe"
 import Set from "Set"
 
 import { splice } from "@/Genes"
@@ -17,7 +17,6 @@ export type Creature = Creature(Short, Short, List Gene, Short, String) | Ghost
 
 derive Comparable Creature
 
-
 isGhost :: Creature -> Boolean
 export isGhost = where {
   Ghost =>
@@ -26,7 +25,6 @@ export isGhost = where {
   _ =>
     false
 }
-
 
 parent1 :: Creature -> Short
 export parent1 = where {
@@ -45,9 +43,6 @@ export parent2 = where {
   Creature(_, s, _, _, _) =>
     s
 }
-
-// get :: Dictionary Short Creature -> Short -> Maybe Creature
-// get = (lookup, i) => Dict.get(i, lookup)
 
 genes :: Creature -> List Gene
 export genes = where {
@@ -83,32 +78,56 @@ export parents = (lookup, c) => {
   return #[getter(p1), getter(p2)]
 }
 
+isParent :: Creature -> Creature -> Boolean
+export isParent = (p, child) => {
+  rawId = id(p)
+  a = parent1(child)
+  b = parent2(child)
+  return rawId == a || rawId == b
+}
+
+import IO from "IO"
+
+
+
 ancestors :: Dictionary Short Creature -> Creature -> Set Creature
 export ancestors = (lookup, c) => {
-  get = parents(lookup)
-  walk :: Set Creature -> Creature -> Set Creature
-  walk = (set, creature) => where(get(creature)) {
-    #[Just(a), Just(b)] =>
-      pipe(
-        Set.insert(a),
-        Set.insert(b),
-      )(set)
+  ax = []
+  walk :: Creature -> List Creature
+  walk = pipe(
+    parents(lookup),
+    where {
+      #[Just(a), Just(b)] =>
+        [a, b]
 
-    #[Just(a), Nothing] =>
-      Set.insert(a, set)
+      #[Just(a), Nothing] =>
+        [a]
 
-    #[Nothing, Just(b)] =>
-      Set.insert(b, set)
+      #[Nothing, Just(b)] =>
+        [b]
 
-    _ =>
-      set
-  }
-  return walk(Set.empty, c)
+      _ =>
+        []
+    },
+    (y) => {
+      ax := List.concat(ax, y)
+      return map(walk, y)
+    },
+  )
+  walk(c)
+  return Set.fromList(ax)
 }
+
+isAncestor :: Dictionary Short Creature -> Creature -> Creature -> Boolean
+export isAncestor = (lookup, parent, c) => pipe(
+  ancestors(lookup),
+  Set.toList,
+  map(id),
+  List.includes(id(parent)),
+)(c)
 
 original :: List Gene -> Short -> String -> Creature
 export original = Creature(-1, -1)
-
 
 reproduce :: Random -> String -> Short -> Creature -> Creature -> Creature
 export reproduce = (r, newName, s, a, b) => {
@@ -117,3 +136,26 @@ export reproduce = (r, newName, s, a, b) => {
   mixed = splice(r, ag, bg)
   return Creature(id(a), id(b), mixed, s, newName)
 }
+
+structuredReproduce :: Dictionary Short Creature
+  -> Boolean
+  -> Random
+  -> String
+  -> Short
+  -> Creature
+  -> Creature
+  -> Maybe Creature
+export structuredReproduce = (lookup, noAncestors, r, newName, s, a, b) => if (
+  noAncestors && isAncestor(lookup, a, a)
+) {
+  Nothing
+} else {
+  Just(reproduce(r, newName, s, a, b))
+}
+
+nameFromId :: Dictionary Short Creature -> Short -> String
+export nameFromId = (creatures, s) => pipe(
+  Dict.get(s),
+  map(name),
+  fromMaybe("?"),
+)(creatures)

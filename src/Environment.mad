@@ -2,9 +2,13 @@ import type { Random } from "Random"
 
 import type { Creature } from "@/Creature"
 
+import Dict from "Dictionary"
 import { generateFromString } from "Random"
 
+import { Creature } from "@/Creature"
+import { ALL_GENES, sortGenes, spontaneous } from "@/Genes"
 import { makeCounter } from "@/Helpers"
+import { name } from "@/Language"
 
 
 
@@ -14,9 +18,21 @@ export alias Environment = {
   seed :: Random,
 }
 
-create :: String -> Environment
-export create = (seedString) => {
-  return { counter: makeCounter(), seed: generateFromString(seedString), creatures: {{}} }
+create :: Random -> Environment
+export create = (seed) => {
+  return { counter: makeCounter(), seed, creatures: {{}} }
+}
+
+addRandomCreature :: Environment -> Environment
+export addRandomCreature = (env) => {
+  id = env.counter()
+  genes = sortGenes(spontaneous(env.seed, ALL_GENES))
+  newCreature = Creature(-1, -1, genes, id, name(env.seed))
+  return {
+    counter: env.counter,
+    seed: env.seed,
+    creatures: Dict.insert(id, newCreature, env.creatures),
+  }
 }
 
 iter :: Environment -> Environment

@@ -145,7 +145,10 @@ test(
 
 test(
   "mutateAdd",
-  () => assertEquals(mutateAdd(generateFromString("test"), ALL_GENES, []), [Gene(2, 0, "Purple")]),
+  () => assertEquals(
+    mutateAdd(generateFromString("test"), ALL_GENES, []),
+    [Gene(8, 0.3, "Echolocative")],
+  ),
 )
 
 test(
@@ -190,7 +193,7 @@ test(
           Gene(1, 0, "Red"),
           Gene(2, 0, "Gray"),
           Gene(4, 0, "Smooth"),
-          Gene(2, 0, "Black"),
+          Gene(9, 0.1, "Mandibled"),
         ],
         [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(4, 0, "Smooth")],
       ],

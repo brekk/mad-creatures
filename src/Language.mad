@@ -106,9 +106,9 @@ wordlike :: Boolean -> Random -> String
 export wordlike = (mode, r) => {
   count = integer(3, 7, r)
   base = chars(r, count)
-  name = ""
+  n = ""
   algo = mode ? charWalkForward : charWalkBackward
-  while(String.length(name) < 4) {
+  while(String.length(n) < 4) {
     pipe(
       map(
         where {
@@ -123,12 +123,12 @@ export wordlike = (mode, r) => {
       algo,
       (newName) => {
         if (!tripleVowel(newName)) do {
-          name := newName
+          n := newName
         }
       },
     )(base)
   }
-  return name
+  return n
 }
 export forword = wordlike(true)
 export backword = wordlike(false)
@@ -139,3 +139,9 @@ export capitalize = (str) => pipe(
   map(String.prependChar($, String.slice(1, String.length(str), str))),
   fromMaybe(str),
 )(str)
+
+name :: Random -> String
+export name = (r) => pipe(
+  wordlike(boolean(r)),
+  capitalize,
+)(r)

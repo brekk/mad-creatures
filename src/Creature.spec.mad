@@ -10,7 +10,9 @@ import {
   ancestors,
   genes,
   id,
+  isAncestor,
   isGhost,
+  isParent,
   name,
   original,
   parent1,
@@ -109,7 +111,12 @@ test(
     parents(
       {{
         0: original(
-          [Gene(4, 0, "Smooth"), Gene(2, 0, "Black"), Gene(1, 0, "Red"), Gene(0, 0, "Spotted")],
+          [
+            Gene(4, 0.3, "Armored"),
+            Gene(2, 0, "Black"),
+            Gene(1, 0, "Red"),
+            Gene(0, 0.1, "Camoflaged"),
+          ],
           1,
           "a",
         ),
@@ -132,7 +139,12 @@ test(
         Creature(
           -1,
           -1,
-          [Gene(4, 0, "Smooth"), Gene(2, 0, "Black"), Gene(1, 0, "Red"), Gene(0, 0, "Spotted")],
+          [
+            Gene(4, 0.3, "Armored"),
+            Gene(2, 0, "Black"),
+            Gene(1, 0, "Red"),
+            Gene(0, 0.1, "Camoflaged"),
+          ],
           1,
           "a",
         ),
@@ -159,27 +171,53 @@ test(
 test(
   "ancestors",
   () => do {
-    a = original(
-      [Gene(4, 0, "Smooth"), Gene(2, 0, "Black"), Gene(1, 0, "Red"), Gene(0, 0, "Spotted")],
-      1,
-      "a",
+    a = Creature(-1, -1, [], 1, "A")
+    b = Creature(-1, -1, [], 2, "B")
+    c = Creature(-1, -1, [], 3, "C")
+    d = Creature(-1, -1, [], 4, "D")
+    e = Creature(1, 2, [], 5, "E")
+    f = Creature(3, 4, [], 6, "F")
+    g = Creature(5, 6, [], 7, "G")
+    lookup = {{ 1: a, 2: b, 3: c, 4: d, 5: e, 6: f, 7: g }}
+    return assertEquals(
+      ancestors(lookup, g),
+      Set.fromList([
+        Creature(-1, -1, [], 1, "A"),
+        Creature(-1, -1, [], 2, "B"),
+        Creature(-1, -1, [], 3, "C"),
+        Creature(-1, -1, [], 4, "D"),
+        Creature(1, 2, [], 5, "E"),
+        Creature(3, 4, [], 6, "F"),
+      ]),
     )
-    b = original(
-      [
-        Gene(4, 0.1, "Scaly"),
-        Gene(2, 0, "Yellow"),
-        Gene(1, 0, "Green"),
-        Gene(0, 0.1, "Banded"),
-        Gene(3, 1, "Albino"),
-      ],
-      2,
-      "b",
-    )
-    lookup = {{ 0: a, 1: b }}
+  },
+)
 
-    _ <- assertEquals(ancestors(lookup, Creature(0, -1, [], 3, "c")), Set.fromList([a]))
-    _ <- assertEquals(ancestors(lookup, Creature(-1, 0, [], 3, "c")), Set.fromList([a]))
-    _ <- assertEquals(ancestors(lookup, Creature(-1, -1, [], 3, "c")), Set.fromList([]))
-    return assertEquals(ancestors(lookup, Creature(0, 1, [], 3, "c")), Set.fromList([a, b]))
+test(
+  "isParent",
+  () => do {
+    a = Creature(-1, -1, [], 1, "a")
+    b = Creature(-1, -1, [], 2, "b")
+    c = Creature(1, 2, [], 3, "c")
+    d = Creature(100, 100, [], 0, "d")
+    _ <- assertEquals(isParent(d, c), false)
+    _ <- assertEquals(isParent(a, c), true)
+    return assertEquals(isParent(b, c), true)
+  },
+)
+
+test(
+  "isAncestor",
+  () => do {
+    a = Creature(-1, -1, [], 1, "A")
+    b = Creature(-1, -1, [], 2, "B")
+    c = Creature(-1, -1, [], 3, "C")
+    d = Creature(-1, -1, [], 4, "D")
+    e = Creature(1, 2, [], 5, "E")
+    f = Creature(3, 4, [], 6, "F")
+    g = Creature(5, 6, [], 7, "G")
+    lookup = {{ 1: a, 2: b, 3: c, 4: d, 5: e, 6: f, 7: g }}
+    _ <- assertEquals(isAncestor(lookup, a, g), true)
+    return assertEquals(isAncestor(lookup, g, a), false)
   },
 )

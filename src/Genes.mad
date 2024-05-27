@@ -6,7 +6,7 @@ import { EQ, GT, LT } from "Compare"
 import { equals } from "Function"
 import List from "List"
 import { Just, Nothing, fromMaybe, isJust } from "Maybe"
-import { boolean, float, pick } from "Random"
+import { boolean, float, integer, pick } from "Random"
 import Short from "Short"
 
 
@@ -16,46 +16,103 @@ derive Comparable Gene
 
 export ALL_GENES = [
   // patterns 0
-  Gene(0_s, 0.0, "Spotted"),
-  Gene(0_s, 0.1, "Striped"),
-  Gene(0_s, 0.1, "Banded"),
-  Gene(0_s, 0.1, "Camoflaged"),
-  Gene(0_s, 0.2, "Calico"),
-  Gene(0_s, 0.5, "Solid"),
+  Gene(0, 0.0, "Spotted"),
+  Gene(0, 0.1, "Striped"),
+  Gene(0, 0.1, "Banded"),
+  Gene(0, 0.1, "Camoflaged"),
+  Gene(0, 0.2, "Calico"),
+  Gene(0, 0.5, "Solid"),
   // colors 1
-  Gene(1_s, 0.0, "Red"),
-  Gene(1_s, 0.0, "Orange"),
-  Gene(1_s, 0.0, "Yellow"),
-  Gene(1_s, 0.0, "Green"),
-  Gene(1_s, 0.0, "Blue"),
-  Gene(1_s, 0.0, "Purple"),
-  Gene(1_s, 0.0, "Black"),
-  Gene(1_s, 0.0, "Gray"),
-  Gene(1_s, 0.0, "White"),
+  Gene(1, 0.0, "Red"),
+  Gene(1, 0.0, "Orange"),
+  Gene(1, 0.0, "Yellow"),
+  Gene(1, 0.0, "Green"),
+  Gene(1, 0.0, "Blue"),
+  Gene(1, 0.0, "Purple"),
+  Gene(1, 0.0, "Black"),
+  Gene(1, 0.0, "Gray"),
+  Gene(1, 0.0, "White"),
   // colors 2
-  Gene(2_s, 0.0, "Red"),
-  Gene(2_s, 0.0, "Orange"),
-  Gene(2_s, 0.0, "Yellow"),
-  Gene(2_s, 0.0, "Green"),
-  Gene(2_s, 0.0, "Blue"),
-  Gene(2_s, 0.0, "Purple"),
-  Gene(2_s, 0.0, "Black"),
-  Gene(2_s, 0.0, "Gray"),
-  Gene(2_s, 0.0, "White"),
+  Gene(2, 0.0, "Red"),
+  Gene(2, 0.0, "Orange"),
+  Gene(2, 0.0, "Yellow"),
+  Gene(2, 0.0, "Green"),
+  Gene(2, 0.0, "Blue"),
+  Gene(2, 0.0, "Purple"),
+  Gene(2, 0.0, "Black"),
+  Gene(2, 0.0, "Gray"),
+  Gene(2, 0.0, "White"),
   // pigment 3
-  Gene(3_s, 1.0, "Albino"),
-  Gene(3_s, 0.2, "Vitiligo"),
+  Gene(3, 1.0, "Albino"),
+  Gene(3, 0.2, "Vitiligo"),
+  Gene(3, 0.4, "Chameleonic"),
   // skin 4
-  Gene(4_s, 0.0, "Smooth"),
-  Gene(4_s, 0.1, "Scaly"),
-  Gene(4_s, 0.1, "Ridged"),
-  Gene(4_s, 0.1, "Spiky"),
-  Gene(4_s, 0.2, "Furry"),
-  Gene(4_s, 0.3, "Armored"),
+  Gene(4, 0.0, "Smooth"),
+  Gene(4, 0.1, "Scaly"),
+  Gene(4, 0.1, "Ridged"),
+  Gene(4, 0.1, "Spiky"),
+  Gene(4, 0.2, "Furry"),
+  Gene(4, 0.3, "Armored"),
+  Gene(4, 0.3, "Shelled"),
   // cool? 5
-  Gene(5_s, 0.0, "Poisonous"),
-  Gene(5_s, 0.5, "Venomous"),
-  Gene(5_s, 0.1, "Electric"),
+  Gene(5, 0.2, "Poisonous"),
+  Gene(5, 0.1, "Venomous"),
+  Gene(5, 0.9, "Non-poisonous"),
+  // face accoutrements
+  Gene(6, 0.1, "Horned"),
+  Gene(6, 0.2, "Long-snouted"),
+  Gene(6, 0.3, "Antlered"),
+  Gene(6, 0.4, "Broad-antlered"),
+  Gene(6, 0.3, "Prehensile-snouted"),
+  // eyes
+  Gene(7, 0.1, "Cycloptic"),
+  Gene(7, 0.95, "Binocular"),
+  Gene(7, 0.4, "Parietal-eyed"),
+  Gene(7, 0.5, "Multi-eyed"),
+  Gene(7, 0.3, "Compound-eyed"),
+  // hearing
+  Gene(8, 0.3, "Antennaed"),
+  Gene(8, 0.1, "Bone-conductive"),
+  Gene(8, 0.6, "Big-eared"),
+  Gene(8, 0.3, "Echolocative"),
+  // mouthparts
+  Gene(9, 0.1, "Mandibled"),
+  Gene(9, 0.3, "Tentacle-faced"),
+  Gene(9, 0.2, "Setaed"),
+  Gene(9, 0.3, "Proboscised"),
+  Gene(9, 0.9, "Chewing"),
+  // flying locomotion
+  Gene(10, 0.3, "Winged"),
+  Gene(10, 0.3, "Direct-flighted"),
+  Gene(10, 0.1, "Indirect-flighted"),
+  Gene(10, 0.9, "Non-flying"),
+  // locomotion
+  // SALTATION
+  Gene(11, 0.3, "Jumping"),
+  Gene(11, 0.8, "Bipedal"),
+  Gene(11, 0.6, "Quadrupedal"),
+  Gene(11, 0.5, "Octopedal"),
+  Gene(11, 0.4, "Multi-legged"),
+  Gene(11, 0.05, "Wheeled"),
+  Gene(11, 0.1, "Rolling"),
+  Gene(11, 0.1, "Teleportative"),
+  Gene(11, 0.2, "Undulatory"),
+  Gene(11, 0.3, "Slithering"),
+  Gene(11, 0.6, "Side-winding"),
+  Gene(11, 0.4, "Crawling"),
+  Gene(11, 0.2, "Brachiated"),
+  Gene(11, 0.1, "Sliding"),
+  Gene(11, 0.7, "Ungulated"),
+  Gene(11, 0.2, "Anchored"),
+  // underwater locomotion
+  Gene(12, 0.1, "Ciliaed"),
+  Gene(12, 0.1, "Flagellated"),
+  Gene(12, 0.3, "Pseudopodiated"),
+  Gene(12, 0.4, "Paddling"),
+  Gene(12, 0.9, "Jet-propelled"),
+  Gene(12, 0.8, "Undulatory"),
+  Gene(12, 0.2, "Hydrofoiled"),
+  Gene(12, 0.1, "Drag-powered"),
 ]
 
 geneIndex :: Gene -> Short
@@ -180,11 +237,6 @@ export pickByGeneIndex = (r, g, genes) => pipe(
   pick($, r),
 )(genes)
 
-
-import IO from "IO"
-
-
-
 replaceGene :: Maybe Gene -> Maybe Gene -> List Gene -> List Gene
 export replaceGene = (picked, matched, genes) => where(#[picked, matched]) {
   #[Just(p), Just(m)] =>
@@ -193,7 +245,6 @@ export replaceGene = (picked, matched, genes) => where(#[picked, matched]) {
   _ =>
     genes
 }
-
 
 swapFromPoolWithLimit :: Integer -> Random -> List Gene -> List Gene -> List Gene
 export swapFromPoolWithLimit = (limit, r, pool, genes) => if (
@@ -246,3 +297,19 @@ export mutate = (r, genes) => {
     genes
   }
 }
+
+spontaneous :: Random -> List Gene -> List Gene
+export spontaneous = (r, pool) => pipe(
+  integer(4, 11),
+  List.repeatWith((_) => pick(pool, r)),
+  List.reduce(
+    (gs, mG) => where(mG) {
+      Just(g) =>
+        hasGeneByIndex(gs, g) ? gs : List.append(g, gs)
+
+      Nothing =>
+        gs
+    },
+    [],
+  ),
+)(r)

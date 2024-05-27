@@ -1,16 +1,15 @@
 import type { Random } from "Random"
 
-import type { Creature, Internals, Mood } from "@/Creature"
+import type { Creature, Mood } from "@/Creature"
 import type { Gene } from "@/Genes"
 
 import IO from "IO"
 import List from "List"
 import { Just, Nothing } from "Maybe"
-import { boolean, generateFromString } from "Random"
-import String from "String"
+import { generateFromString } from "Random"
 
-import { makeCounter } from "@/Helpers"
-import Language from "@/Language"
+import Creature from "@/Creature"
+import Env from "@/Environment"
 
 
 
@@ -22,39 +21,47 @@ import Language from "@/Language"
 //   { seed, counter, creatures: []}
 // )(critters)
 
+
+/*
+jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
+skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
+spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
+glynk = original(
+  [GENES.red, GENES.calico, GENES.albino],
+  counter(),
+  "Glynk",
+  { focus: #[0, 0], status: Content },
+)
+IO.pTrace(
+  "creatures!",
+  #[
+    reproduce(seed, "Comini", counter(), jocomo, skimini),
+    reproduce(seed, "Jikimo", counter(), jocomo, skimini),
+    reproduce(seed, "Jokomi", counter(), jocomo, skimini),
+    reproduce(seed, "Spantini", counter(), spantix, skimini),
+    reproduce(seed, "Glyntix", counter(), glynk, spantix),
+    reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
+    reproduce(seed, "Jocontix", counter(), jocomo, spantix),
+  ],
+)
+*/
+
 main = () => {
   seed = generateFromString("creature-0.0.1")
-  counter = makeCounter()
-
-  /*
-                jocomo = YellowSpotted(counter(), "Jocomo", { focus: #[0, 0], status: Content })
-                skimini = WhiteStriped(counter(), "Skimini", { focus: #[0, 0], status: Content })
-                spantix = WhiteStriped(counter(), "Spantix", { focus: #[0, 0], status: Content })
-                glynk = original(
-                  [GENES.red, GENES.calico, GENES.albino],
-                  counter(),
-                  "Glynk",
-                  { focus: #[0, 0], status: Content },
-                )
-                IO.pTrace(
-                  "creatures!",
-                  #[
-                    reproduce(seed, "Comini", counter(), jocomo, skimini),
-                    reproduce(seed, "Jikimo", counter(), jocomo, skimini),
-                    reproduce(seed, "Jokomi", counter(), jocomo, skimini),
-                    reproduce(seed, "Spantini", counter(), spantix, skimini),
-                    reproduce(seed, "Glyntix", counter(), glynk, spantix),
-                    reproduce(seed, "Glyncomo", counter(), glynk, jocomo),
-                    reproduce(seed, "Jocontix", counter(), jocomo, spantix),
-                  ],
-                )
-              */
-  names = List.repeatWith(
-    (_) => pipe(
-      Language.wordlike(boolean(seed)),
-      Language.capitalize,
-    )(seed),
-    20,
-  )
-  IO.pTrace("names", names)
+  env = Env.create(seed)
+  IO.pTrace("ENVIRONMENT", env)
+  starting = pipe(
+    Env.addRandomCreature,
+    Env.addRandomCreature,
+    Env.addRandomCreature,
+    Env.addRandomCreature,
+    Env.addRandomCreature,
+    Env.addRandomCreature,
+  )(env)
+  pipe(
+    .creatures,
+    map(Creature.name),
+    IO.pTrace("starting creatures!"),
+  )(starting)
+  // List.reduce((ex, _) => Env.iter(ex), starting, starting)
 }
