@@ -115,20 +115,14 @@ export clone = (newName, s, a) => Creature(id(a), -1, genes(a), s, newName, 0)
 sameCreatureInList :: List (Maybe Creature) -> Boolean
 export sameCreatureInList = pipe(
   map(map(id)),
-  (ids) => List
-    .reduce(
-      (stack, x) => if (stack.matched) {
-        stack
-      } else do {
-        checked = List.append(x, stack.checked)
-        return if (List.includes(x, stack.checked)) {
-          { matched: true, checked }
-        } else {
-          { matched: false, checked }
-        }
-      },
-      { matched: false, checked: [] },
-      ids,
-    )
-    .matched,
+  List.reduce(
+    (stack, x) => if (stack.matched) {
+      stack
+    } else do {
+      checked = List.append(x, stack.checked)
+      return { checked, matched: List.includes(x, stack.checked) }
+    },
+    { matched: false, checked: [] },
+  ),
+  .matched,
 )
