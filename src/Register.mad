@@ -1,0 +1,123 @@
+import type { Maybe } from "Maybe"
+import type { Random } from "Random"
+
+import type { Creature } from "@/Creature"
+
+import Dict from "Dictionary"
+import List from "List"
+import { Just, Nothing, fromMaybe } from "Maybe"
+import Set from "Set"
+
+import { age, id, name, parent1, parent2, reproduce } from "@/Creature"
+
+
+
+export alias Register = Dictionary Short Creature
+
+addCreature :: Creature -> Register -> Register
+export addCreature = (c, d) => Dict.insert(id(c), c, d)
+
+parents :: Register -> Creature -> #[Maybe Creature, Maybe Creature]
+export parents = (lookup, c) => {
+  getter = Dict.get($, lookup)
+  p1 = parent1(c)
+  p2 = parent2(c)
+  return #[getter(p1), getter(p2)]
+}
+
+ancestors :: Register -> Creature -> Set Creature
+export ancestors = (lookup, c) => {
+  ax = []
+  walk :: Creature -> List Creature
+  walk = pipe(
+    parents(lookup),
+    where {
+      #[Just(a), Just(b)] =>
+        [a, b]
+
+      #[Just(a), Nothing] =>
+        [a]
+
+      #[Nothing, Just(b)] =>
+        [b]
+
+      _ =>
+        []
+    },
+    (y) => {
+      ax := List.concat(ax, y)
+      return map(walk, y)
+    },
+  )
+  walk(c)
+  return Set.fromList(ax)
+}
+
+
+isAncestor :: Register -> Creature -> Creature -> Boolean
+export isAncestor = (lookup, parent, c) => pipe(
+  ancestors(lookup),
+  Set.toList,
+  map(id),
+  List.includes(id(parent)),
+)(c)
+
+export alias Reason = Register -> Creature -> Creature -> Boolean
+
+reasonNoAncestor :: Reason
+export reasonNoAncestor = (lookup, a, b) => {
+  check = isAncestor(lookup)
+  return check(a, b) || check(b, a)
+}
+
+reasonNoSiblings :: Reason
+export reasonNoSiblings = (_, a, b) => {
+  aM = parent1(a)
+  aD = parent2(a)
+  bM = parent1(b)
+  bD = parent2(b)
+  return aM == bM || aM == bD || aD == bM || aD == bD
+}
+
+reasonNoCousins :: Reason
+export reasonNoCousins = (lookup, a, b) => {
+  anc = ancestors(lookup)
+  x = anc(a)
+  y = anc(b)
+  lx = Set.length(x)
+  ly = Set.length(y)
+  return lx + ly > Set.length(Set.merge(x, y))
+}
+
+nameFromId :: Register -> Short -> String
+export nameFromId = (creatures, s) => pipe(
+  Dict.get(s),
+  map(name),
+  fromMaybe("?"),
+)(creatures)
+
+conditionalReproduce :: List Reason
+  -> Register
+  -> Random
+  -> String
+  -> Short
+  -> Creature
+  -> Creature
+  -> Maybe Creature
+export conditionalReproduce = (checks, lookup, r, newName, s, a, b) => if (
+  List.any((check) => check(lookup, a, b), checks)
+) {
+  Nothing
+} else {
+  Just(reproduce(r, newName, s, a, b))
+}
+
+ageLimit :: Short -> Reason
+export ageLimit = (limit) => (_, a, b) => age(a) < limit || age(b) < limit
+
+export procreate = conditionalReproduce([
+  reasonNoCousins,
+  reasonNoSiblings,
+  reasonNoAncestor,
+  ageLimit(5),
+])

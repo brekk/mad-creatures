@@ -1,4 +1,4 @@
-import type { Gene } from "@/Genes"
+import type { Gene } from "@/Genetics"
 
 import { EQ } from "Compare"
 import List from "List"
@@ -31,7 +31,7 @@ import {
   spontaneous,
   swapFromPool,
   uniqueByIndex,
-} from "@/Genes"
+} from "@/Genetics"
 
 
 

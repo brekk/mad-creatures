@@ -1,7 +1,7 @@
 import type { Random } from "Random"
 
 import type { Creature, Mood } from "@/Creature"
-import type { Gene } from "@/Genes"
+import type { Gene } from "@/Genetics"
 
 import IO from "IO"
 import List from "List"

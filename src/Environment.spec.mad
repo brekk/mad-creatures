@@ -1,9 +1,14 @@
-import { generateFromString } from "Random"
+import Dict from "Dictionary"
+import IO from "IO"
+import List from "List"
+import { fromMaybe } from "Maybe"
+import { generateFromString, integer, pick } from "Random"
+import Set from "Set"
 import { assertEquals, test } from "Test"
 
 import { Creature } from "@/Creature"
 import { addRandomCreature, create, parthenogenesis } from "@/Environment"
-import { Gene } from "@/Genes"
+import { Gene } from "@/Genetics"
 
 
 
@@ -115,5 +120,37 @@ test(
         ),
       }},
     )
+  },
+)
+
+test(
+  "genesis",
+  () => do {
+    seed = generateFromString("test")
+    env = create(seed)
+    _ <- assertEquals(env.creatures, {{}})
+    env2 = pipe(
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      addRandomCreature,
+      .creatures,
+      (cx) => pipe(
+        // IO.pTrace("CREATURES"),
+        Dict.keys,
+        (k) => List.repeatWith((_) => pick(k, seed), integer(2, 6, seed)),
+        map(fromMaybe(-1)),
+        Set.fromList,
+        Set.toList,
+        IO.pTrace("raw"),
+        map(Dict.get($, cx)),
+        IO.pTrace("gotten"),
+      )(cx),
+    )(env)
+    return assertEquals(true, true)
   },
 )

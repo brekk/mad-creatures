@@ -1,14 +1,11 @@
 import type { Maybe } from "Maybe"
 import type { Random } from "Random"
 
-import type { Gene } from "@/Genes"
+import type { Gene } from "@/Genetics"
 
-import Dict from "Dictionary"
 import List from "List"
-import { Just, Nothing, fromMaybe } from "Maybe"
-import Set from "Set"
 
-import { splice } from "@/Genes"
+import { splice } from "@/Genetics"
 
 
 
@@ -80,13 +77,18 @@ export age = where {
     x
 }
 
-parents :: Dictionary Short Creature -> Creature -> #[Maybe Creature, Maybe Creature]
-export parents = (lookup, c) => {
-  getter = Dict.get($, lookup)
-  p1 = parent1(c)
-  p2 = parent2(c)
-  return #[getter(p1), getter(p2)]
+grow :: Creature -> Creature
+export grow = where {
+  Creature(p, q, g, i, n, x) =>
+    Creature(p, q, g, i, n, x + 1)
+
+  Ghost(s, n, x) =>
+    Ghost(s, n, x)
 }
+
+hasAge :: Short -> Creature -> Boolean
+export hasAge = (x, c) => age(c) >= x
+
 
 isParent :: Creature -> Creature -> Boolean
 export isParent = (p, child) => {
@@ -95,42 +97,6 @@ export isParent = (p, child) => {
   b = parent2(child)
   return rawId == a || rawId == b
 }
-
-ancestors :: Dictionary Short Creature -> Creature -> Set Creature
-export ancestors = (lookup, c) => {
-  ax = []
-  walk :: Creature -> List Creature
-  walk = pipe(
-    parents(lookup),
-    where {
-      #[Just(a), Just(b)] =>
-        [a, b]
-
-      #[Just(a), Nothing] =>
-        [a]
-
-      #[Nothing, Just(b)] =>
-        [b]
-
-      _ =>
-        []
-    },
-    (y) => {
-      ax := List.concat(ax, y)
-      return map(walk, y)
-    },
-  )
-  walk(c)
-  return Set.fromList(ax)
-}
-
-isAncestor :: Dictionary Short Creature -> Creature -> Creature -> Boolean
-export isAncestor = (lookup, parent, c) => pipe(
-  ancestors(lookup),
-  Set.toList,
-  map(id),
-  List.includes(id(parent)),
-)(c)
 
 original :: List Gene -> Short -> String -> Short -> Creature
 export original = Creature(-1, -1)
@@ -145,14 +111,6 @@ export reproduce = (r, newName, s, a, b) => {
 
 clone :: String -> Short -> Creature -> Creature
 export clone = (newName, s, a) => Creature(id(a), -1, genes(a), s, newName, 0)
-
-alias Reason = Dictionary Short Creature -> Creature -> Creature -> Boolean
-
-reasonNoAncestor :: Reason
-export reasonNoAncestor = (lookup, a, b) => {
-  check = isAncestor(lookup)
-  return check(a, b) || check(b, a)
-}
 
 sameCreatureInList :: List (Maybe Creature) -> Boolean
 export sameCreatureInList = pipe(
@@ -174,55 +132,3 @@ export sameCreatureInList = pipe(
     )
     .matched,
 )
-
-reasonNoSiblings :: Reason
-export reasonNoSiblings = (_, a, b) => {
-  aM = parent1(a)
-  aD = parent2(a)
-  bM = parent1(b)
-  bD = parent2(b)
-  return aM == bM || aM == bD || aD == bM || aD == bD
-}
-
-reasonNoCousins :: Reason
-export reasonNoCousins = (lookup, a, b) => {
-  anc = ancestors(lookup)
-  x = anc(a)
-  y = anc(b)
-  lx = Set.length(x)
-  ly = Set.length(y)
-  return lx + ly > Set.length(Set.merge(x, y))
-}
-
-conditionalReproduce :: List Reason
-  -> Dictionary Short Creature
-  -> Random
-  -> String
-  -> Short
-  -> Creature
-  -> Creature
-  -> Maybe Creature
-export conditionalReproduce = (checks, lookup, r, newName, s, a, b) => if (
-  List.any((check) => check(lookup, a, b), checks)
-) {
-  Nothing
-} else {
-  Just(reproduce(r, newName, s, a, b))
-}
-
-ageLimit :: Short -> Reason
-export ageLimit = (limit) => (_, a, b) => age(a) < limit || age(b) < limit
-
-export procreate = conditionalReproduce([
-  reasonNoCousins,
-  reasonNoSiblings,
-  reasonNoAncestor,
-  ageLimit(5),
-])
-
-nameFromId :: Dictionary Short Creature -> Short -> String
-export nameFromId = (creatures, s) => pipe(
-  Dict.get(s),
-  map(name),
-  fromMaybe("?"),
-)(creatures)
