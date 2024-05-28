@@ -29,7 +29,7 @@ export addRandomCreature = (env) => {
   id = env.counter()
   genes = sortGenes(spontaneous(env.seed, ALL_GENES))
   newName = name(env.seed)
-  newCreature = Creature(-1, -1, genes, id, newName)
+  newCreature = Creature(-1, -1, genes, id, newName, 0)
   return {
     counter: env.counter,
     seed: env.seed,
@@ -54,6 +54,9 @@ export parthenogenesis = (env) => {
   )(env.creatures)
   return { counter: env.counter, seed: env.seed, creatures }
 }
+
+generation :: Environment -> Environment
+export generation = (env) => env
 
 
 iter :: Environment -> Environment

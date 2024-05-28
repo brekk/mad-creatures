@@ -12,13 +12,15 @@ import { splice } from "@/Genes"
 
 
 
-export type Creature = Creature(Short, Short, List Gene, Short, String) | Ghost
+export type Creature
+  = Creature(Short, Short, List Gene, Short, String, Short)
+  | Ghost(Short, String, Short)
 
 derive Comparable Creature
 
 isGhost :: Creature -> Boolean
 export isGhost = where {
-  Ghost =>
+  Ghost(_, _, _) =>
     true
 
   _ =>
@@ -27,46 +29,55 @@ export isGhost = where {
 
 parent1 :: Creature -> Short
 export parent1 = where {
-  Ghost =>
-    -1
-
-  Creature(s, _, _, _, _) =>
+  Creature(s, _, _, _, _, _) =>
     s
+
+  _ =>
+    -1
 }
 
 parent2 :: Creature -> Short
 export parent2 = where {
-  Ghost =>
-    -1
-
-  Creature(_, s, _, _, _) =>
+  Creature(_, s, _, _, _, _) =>
     s
+
+  _ =>
+    -1
 }
 
 genes :: Creature -> List Gene
 export genes = where {
-  Ghost =>
-    []
-
-  Creature(_, _, g, _, _) =>
+  Creature(_, _, g, _, _, _) =>
     g
+
+  _ =>
+    []
 }
 
 name :: Creature -> String
 export name = where {
-  Creature(_, _, _, _, n) =>
+  Creature(_, _, _, _, n, _) =>
     n
 
-  Ghost =>
-    "?"
+  Ghost(_, n, _) =>
+    n
 }
 id :: Creature -> Short
 export id = where {
-  Creature(_, _, _, i, _) =>
+  Creature(_, _, _, i, _, _) =>
     i
 
-  Ghost =>
-    -1
+  Ghost(s, _, _) =>
+    s
+}
+
+age :: Creature -> Short
+export age = where {
+  Creature(_, _, _, _, _, x) =>
+    x
+
+  Ghost(_, _, x) =>
+    x
 }
 
 parents :: Dictionary Short Creature -> Creature -> #[Maybe Creature, Maybe Creature]
@@ -121,7 +132,7 @@ export isAncestor = (lookup, parent, c) => pipe(
   List.includes(id(parent)),
 )(c)
 
-original :: List Gene -> Short -> String -> Creature
+original :: List Gene -> Short -> String -> Short -> Creature
 export original = Creature(-1, -1)
 
 reproduce :: Random -> String -> Short -> Creature -> Creature -> Creature
@@ -129,29 +140,85 @@ export reproduce = (r, newName, s, a, b) => {
   ag = genes(a)
   bg = genes(b)
   mixed = splice(r, ag, bg)
-  return Creature(id(a), id(b), mixed, s, newName)
+  return Creature(id(a), id(b), mixed, s, newName, 0)
 }
 
 clone :: String -> Short -> Creature -> Creature
-export clone = (newName, s, a) => Creature(id(a), -1, genes(a), s, newName)
+export clone = (newName, s, a) => Creature(id(a), -1, genes(a), s, newName, 0)
 
+alias Reason = Dictionary Short Creature -> Creature -> Creature -> Boolean
 
-structuredReproduce :: Dictionary Short Creature
-  -> Boolean
+reasonNoAncestor :: Reason
+export reasonNoAncestor = (lookup, a, b) => {
+  check = isAncestor(lookup)
+  return check(a, b) || check(b, a)
+}
+
+sameCreatureInList :: List (Maybe Creature) -> Boolean
+export sameCreatureInList = pipe(
+  map(map(id)),
+  (ids) => List
+    .reduce(
+      (stack, x) => if (stack.matched) {
+        stack
+      } else do {
+        checked = List.append(x, stack.checked)
+        return if (List.includes(x, stack.checked)) {
+          { matched: true, checked }
+        } else {
+          { matched: false, checked }
+        }
+      },
+      { matched: false, checked: [] },
+      ids,
+    )
+    .matched,
+)
+
+reasonNoSiblings :: Reason
+export reasonNoSiblings = (_, a, b) => {
+  aM = parent1(a)
+  aD = parent2(a)
+  bM = parent1(b)
+  bD = parent2(b)
+  return aM == bM || aM == bD || aD == bM || aD == bD
+}
+
+reasonNoCousins :: Reason
+export reasonNoCousins = (lookup, a, b) => {
+  anc = ancestors(lookup)
+  x = anc(a)
+  y = anc(b)
+  lx = Set.length(x)
+  ly = Set.length(y)
+  return lx + ly > Set.length(Set.merge(x, y))
+}
+
+conditionalReproduce :: List Reason
+  -> Dictionary Short Creature
   -> Random
   -> String
   -> Short
   -> Creature
   -> Creature
   -> Maybe Creature
-export structuredReproduce = (lookup, noAncestors, r, newName, s, a, b) => {
-  isAnc = isAncestor(lookup)
-  return if (noAncestors && (isAnc(a, b) || isAnc(b, a))) {
-    Nothing
-  } else {
-    Just(reproduce(r, newName, s, a, b))
-  }
+export conditionalReproduce = (checks, lookup, r, newName, s, a, b) => if (
+  List.any((check) => check(lookup, a, b), checks)
+) {
+  Nothing
+} else {
+  Just(reproduce(r, newName, s, a, b))
 }
+
+ageLimit :: Short -> Reason
+export ageLimit = (limit) => (_, a, b) => age(a) < limit || age(b) < limit
+
+export procreate = conditionalReproduce([
+  reasonNoCousins,
+  reasonNoSiblings,
+  reasonNoAncestor,
+  ageLimit(5),
+])
 
 nameFromId :: Dictionary Short Creature -> Short -> String
 export nameFromId = (creatures, s) => pipe(
