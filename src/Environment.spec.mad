@@ -3,7 +3,14 @@ import { generateFromString } from "Random"
 import { assertEquals, test } from "Test"
 
 import { Creature } from "@/Creature"
-import { addRandomCreature, create, genesis, parthenogenesis, season } from "@/Environment"
+import {
+  addRandomCreature,
+  create,
+  generation,
+  genesis,
+  parthenogenesis,
+  season,
+} from "@/Environment"
 import { Gene } from "@/Genetics"
 
 
@@ -120,10 +127,10 @@ test(
 )
 
 test(
-  "selectRandomCreature",
+  "genesis",
   () => do {
     env = create(generateFromString("test"))
-    // _ <- assertEquals(env.creatures, {{}})
+    _ <- assertEquals(env.creatures, {{}})
     env2 = pipe(
       addRandomCreature,
       addRandomCreature,
@@ -137,7 +144,224 @@ test(
       season,
       genesis,
     )(env)
-    return assertEquals(true, true)
-    // return assertEquals(env2.creatures, {{}})
+    return assertEquals(
+      env2.creatures,
+      {{
+        1: Creature(
+          -1,
+          -1,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          1,
+          "Onalivu",
+          5,
+        ),
+        2: Creature(
+          -1,
+          -1,
+          [
+            Gene(2, 0, "Green"),
+            Gene(4, 0.1, "Ridged"),
+            Gene(8, 0.6, "Big-eared"),
+            Gene(9, 0.1, "Mandibled"),
+            Gene(11, 0.3, "Jumping"),
+          ],
+          2,
+          "Unaletit",
+          5,
+        ),
+        3: Creature(
+          -1,
+          -1,
+          [
+            Gene(1, 0, "Purple"),
+            Gene(2, 0, "Red"),
+            Gene(3, 1, "Albino"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          3,
+          "Avureufim",
+          5,
+        ),
+        4: Creature(
+          -1,
+          -1,
+          [
+            Gene(0, 0.1, "Camoflaged"),
+            Gene(2, 0, "Blue"),
+            Gene(8, 0.1, "Bone-conductive"),
+            Gene(11, 0.2, "Brachiated"),
+            Gene(12, 0.1, "Drag-powered"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          4,
+          "Axesqu",
+          5,
+        ),
+        5: Creature(
+          1,
+          2,
+          [
+            Gene(2, 0, "Green"),
+            Gene(4, 0.1, "Ridged"),
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(8, 0.6, "Big-eared"),
+            Gene(9, 0.1, "Mandibled"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.3, "Jumping"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          5,
+          "Haplu",
+          0,
+        ),
+      }},
+    )
+  },
+)
+
+test(
+  "generation",
+  () => do {
+    env = create(generateFromString("test"))
+    env2 = pipe(
+      addRandomCreature,
+      generation,
+      addRandomCreature,
+      generation,
+      addRandomCreature,
+      generation,
+      generation,
+      generation,
+      generation,
+      generation,
+      generation,
+      generation,
+      generation,
+      generation,
+    )(env)
+    return assertEquals(
+      env2.creatures,
+      {{
+        1: Creature(
+          -1,
+          -1,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          1,
+          "Onalivu",
+          11,
+        ),
+        11: Creature(
+          2,
+          5,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(8, 0.3, "Antennaed"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          11,
+          "Oyhk",
+          3,
+        ),
+        12: Creature(
+          2,
+          3,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          12,
+          "Vyuxe",
+          2,
+        ),
+        14: Creature(
+          5,
+          9,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(8, 0.3, "Antennaed"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          14,
+          "Picifigi",
+          0,
+        ),
+        2: Creature(
+          1,
+          -1,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          2,
+          "Oreupa",
+          10,
+        ),
+        3: Creature(
+          -1,
+          -1,
+          [Gene(6, 0.2, "Long-snouted"), Gene(11, 0.1, "Sliding"), Gene(13, 0.2, "Stingered")],
+          3,
+          "Mudro",
+          10,
+        ),
+        5: Creature(
+          -1,
+          -1,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.5, "Multi-eyed"),
+            Gene(8, 0.3, "Antennaed"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+          ],
+          5,
+          "Teba",
+          9,
+        ),
+        9: Creature(
+          1,
+          3,
+          [
+            Gene(6, 0.2, "Long-snouted"),
+            Gene(7, 0.95, "Binocular"),
+            Gene(10, 0.3, "Winged"),
+            Gene(11, 0.2, "Undulatory"),
+            Gene(12, 0.8, "Undulatory"),
+            Gene(13, 0.2, "Stingered"),
+          ],
+          9,
+          "Ulei",
+          5,
+        ),
+      }},
+    )
   },
 )

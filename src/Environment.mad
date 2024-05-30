@@ -63,26 +63,27 @@ export season = (env) => {
   return { ...env, generation: env.generation + 1, creatures: map(grow, env.creatures) }
 }
 
-import IO from "IO"
+genesis :: Environment -> Environment
+export genesis = (env) => (
+  {
+    ...env,
+    creatures: pipe(
+      selectRandomCreatures(env.seed),
+      nextGen(env.seed, env.creatures, env.counter()),
+      maybeAddCreatures(env.creatures),
+    )(env.creatures),
+  }
+)
 
-
-
-// genesis :: Environment -> Environment
-export genesis = (env) => pipe(
-  selectRandomCreatures(env.seed),
-  nextGen(env.seed, env.creatures, env.counter()),
-  (toReproduce) => (
-    {
-      ...env,
-      creatures: pipe(
-        maybeAddCreatures(env.creatures),
-      )(toReproduce),
+generation :: Environment -> Environment
+export generation = pipe(
+  season,
+  (x) => {
+    total = Dict.length(x.creatures)
+    return if (total == 1) {
+      parthenogenesis(x)
+    } else {
+      genesis(x)
     }
-  ),
-)(env.creatures)
-
-
-iter :: Environment -> Environment
-export iter = (env) => {
-  return env
-}
+  },
+)
