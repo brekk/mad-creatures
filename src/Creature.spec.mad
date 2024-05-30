@@ -25,7 +25,7 @@ import { Gene } from "@/Genetics"
 
 
 
-critter = original([Gene(0, 0, "test")], 0, "nice", 0)
+critter = Creature(10, 10, [Gene(0, 0, "test")], 0, "nice", 0)
 
 test(
   "isGhost",
@@ -61,16 +61,16 @@ test(
 test(
   "parent1",
   () => do {
-    _ <- assertEquals(parent1(critter), -1)
-    return assertEquals(parent1(Ghost(0, "test", 0)), -1)
+    _ <- assertEquals(parent1(critter), Just(10))
+    return assertEquals(parent1(Ghost(0, "test", 0)), Nothing)
   },
 )
 
 test(
   "parent2",
   () => do {
-    _ <- assertEquals(parent2(critter), -1)
-    return assertEquals(parent2(Ghost(0, "test", 0)), -1)
+    _ <- assertEquals(parent2(critter), Just(10))
+    return assertEquals(parent2(Ghost(0, "test", 0)), Nothing)
   },
 )
 
@@ -99,7 +99,7 @@ test(
       Creature(
         3,
         6,
-        [Gene(4, 0, "Smooth"), Gene(2, 0, "Black"), Gene(1, 0, "Red"), Gene(0, 0, "Spotted")],
+        [Gene(0, 0, "Spotted"), Gene(1, 0, "Red"), Gene(2, 0, "Black"), Gene(4, 0, "Smooth")],
         7,
         "newname",
         0,
@@ -114,9 +114,12 @@ test(
     a = Creature(-1, -1, [], 1, "a", 0)
     b = Creature(-1, -1, [], 2, "b", 0)
     c = Creature(1, 2, [], 3, "c", 0)
-    d = Creature(100, 100, [], 0, "d", 0)
+    d = Creature(100, 100, [], 4, "d", 0)
+    e = Creature(-1, 4, [], 5, "e", 0)
     _ <- assertEquals(isParent(d, c), false)
     _ <- assertEquals(isParent(a, c), true)
+    _ <- assertEquals(isParent(d, e), true)
+    _ <- assertEquals(isParent(e, d), false)
     return assertEquals(isParent(b, c), true)
   },
 )

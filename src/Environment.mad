@@ -1,19 +1,16 @@
 import type { Random } from "Random"
 
-import type { Creature } from "@/Creature"
 import type { Register } from "@/Register"
 
 import Dict from "Dictionary"
-import List from "List"
-import { Just, Nothing, fromMaybe } from "Maybe"
-import { integer, pick } from "Random"
-import Set from "Set"
+import { fromMaybe } from "Maybe"
+import { pick } from "Random"
 
 import { Creature, clone, grow } from "@/Creature"
 import { ALL_GENES, sortGenes, spontaneous } from "@/Genetics"
 import { makeCounter } from "@/Helpers"
-import { name } from "@/Language"
-import { addCreature, procreate } from "@/Register"
+import { newName } from "@/Language"
+import { addCreature, maybeAddCreatures, nextGen, selectRandomCreatures } from "@/Register"
 
 
 
@@ -33,8 +30,8 @@ addRandomCreature :: Environment -> Environment
 export addRandomCreature = (env) => {
   id = env.counter()
   genes = sortGenes(spontaneous(env.seed, ALL_GENES))
-  newName = name(env.seed)
-  newCreature = Creature(-1, -1, genes, id, newName, 0)
+  newN = newName(env.seed)
+  newCreature = Creature(-1, -1, genes, id, newN, 0)
   return {
     generation: env.generation,
     counter: env.counter,
@@ -46,13 +43,13 @@ export addRandomCreature = (env) => {
 parthenogenesis :: Environment -> Environment
 export parthenogenesis = (env) => {
   id = env.counter()
-  newName = name(env.seed)
+  newN = newName(env.seed)
   creatures = pipe(
     Dict.values,
     pick($, env.seed),
     map(
       pipe(
-        clone(newName, id),
+        clone(newN, id),
         addCreature($, env.creatures),
       ),
     ),
@@ -66,40 +63,24 @@ export season = (env) => {
   return { ...env, generation: env.generation + 1, creatures: map(grow, env.creatures) }
 }
 
-genesis :: Environment -> Environment
-export genesis = (env) => {
-  toReproduce = pipe(
-    Dict.keys,
-    (k) => List.repeatWith((_) => pick(k, env.seed), integer(2, 6, env.seed)),
-    map(fromMaybe(-1)),
-    Set.fromList,
-    Set.toList,
-    map(Dict.get($, env.creatures)),
-    List.reduce(
-      (stack, x) => where(#[stack.curr, x]) {
-        #[Just(a), Just(b)] =>
-          (
-            {
-              kids: pipe(
-                procreate(env.creatures, env.seed, name(env.seed), env.counter(), a),
-                List.append($, stack.kids),
-              )(b),
-              curr: Nothing,
-            }
-          )
+import IO from "IO"
 
-        #[Nothing, Just(_)] =>
-          ({ ...stack, curr: x })
 
-        _ =>
-          stack
-      },
-      { kids: [], curr: Nothing },
-    ),
-    .kids,
-  )(env.creatures)
-  return env
-}
+
+// genesis :: Environment -> Environment
+export genesis = (env) => pipe(
+  selectRandomCreatures(env.seed),
+  nextGen(env.seed, env.creatures, env.counter()),
+  (toReproduce) => (
+    {
+      ...env,
+      creatures: pipe(
+        maybeAddCreatures(env.creatures),
+      )(toReproduce),
+    }
+  ),
+)(env.creatures)
+
 
 iter :: Environment -> Environment
 export iter = (env) => {

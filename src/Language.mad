@@ -114,9 +114,9 @@ export wordlike = (mode, r) => {
       map(character(r)),
       List.flatten,
       algo,
-      (newName) => {
-        if (!tripleVowel(newName)) do {
-          n := newName
+      (newN) => {
+        if (!tripleVowel(newN)) do {
+          n := newN
         }
       },
     )(base)
@@ -133,8 +133,8 @@ export capitalize = (str) => pipe(
   fromMaybe(str),
 )(str)
 
-name :: Random -> String
-export name = (r) => pipe(
+newName :: Random -> String
+export newName = (r) => pipe(
   wordlike(boolean(r)),
   capitalize,
 )(r)

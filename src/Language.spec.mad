@@ -16,7 +16,7 @@ import {
   character,
   chars,
   forword,
-  name,
+  newName,
   select,
   tripleVowel,
   wordlike,

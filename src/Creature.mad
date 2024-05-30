@@ -4,8 +4,9 @@ import type { Random } from "Random"
 import type { Gene } from "@/Genetics"
 
 import List from "List"
+import { Just, Nothing } from "Maybe"
 
-import { splice } from "@/Genetics"
+import { sortGenes, splice } from "@/Genetics"
 
 
 
@@ -24,22 +25,22 @@ export isGhost = where {
     false
 }
 
-parent1 :: Creature -> Short
+parent1 :: Creature -> Maybe Short
 export parent1 = where {
   Creature(s, _, _, _, _, _) =>
-    s
+    Just(s)
 
   _ =>
-    -1
+    Nothing
 }
 
-parent2 :: Creature -> Short
+parent2 :: Creature -> Maybe Short
 export parent2 = where {
   Creature(_, s, _, _, _, _) =>
-    s
+    Just(s)
 
   _ =>
-    -1
+    Nothing
 }
 
 genes :: Creature -> List Gene
@@ -93,9 +94,21 @@ export hasAge = (x, c) => age(c) >= x
 isParent :: Creature -> Creature -> Boolean
 export isParent = (p, child) => {
   rawId = id(p)
-  a = parent1(child)
-  b = parent2(child)
-  return rawId == a || rawId == b
+  ax = parent1(child)
+  bx = parent2(child)
+  return where(#[ax, bx]) {
+    #[Just(a), Just(b)] =>
+      rawId == a || rawId == b
+
+    #[Nothing, Just(b)] =>
+      rawId == b
+
+    #[Just(a), Nothing] =>
+      rawId == a
+
+    _ =>
+      false
+  }
 }
 
 original :: List Gene -> Short -> String -> Short -> Creature
@@ -106,7 +119,7 @@ export reproduce = (r, newName, s, a, b) => {
   ag = genes(a)
   bg = genes(b)
   mixed = splice(r, ag, bg)
-  return Creature(id(a), id(b), mixed, s, newName, 0)
+  return Creature(id(a), id(b), sortGenes(mixed), s, newName, 0)
 }
 
 clone :: String -> Short -> Creature -> Creature

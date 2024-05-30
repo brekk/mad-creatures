@@ -69,7 +69,7 @@ test(
   () => do {
     gen = semiRealisticDictionary()
     _ <- assertEquals(reasonNoSiblings(gen.lookup, gen.a, gen.k), false)
-    return assertEquals(reasonNoSiblings(gen.lookup, gen.j, gen.k), true)
+    return assertEquals(reasonNoSiblings(gen.lookup, gen.j, gen.k), false)
   },
 )
 

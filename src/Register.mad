@@ -4,11 +4,14 @@ import type { Random } from "Random"
 import type { Creature } from "@/Creature"
 
 import Dict from "Dictionary"
+import IO from "IO"
 import List from "List"
 import { Just, Nothing, fromMaybe } from "Maybe"
+import { integer, pick } from "Random"
 import Set from "Set"
 
 import { age, id, name, parent1, parent2, reproduce } from "@/Creature"
+import { newName } from "@/Language"
 
 
 
@@ -17,9 +20,25 @@ export alias Register = Dictionary Short Creature
 addCreature :: Creature -> Register -> Register
 export addCreature = (c, d) => Dict.insert(id(c), c, d)
 
+addCreatures :: Register -> List Creature -> Register
+export addCreatures = (d, cs) => List.reduce((dict, x) => addCreature(x, dict), d, cs)
+
+maybeAddCreatures :: Register -> List (Maybe Creature) -> Register
+export maybeAddCreatures = (d, cs) => List.reduce(
+  (dict, x) => where(x) {
+    Just(y) =>
+      addCreature(y, dict)
+
+    Nothing =>
+      dict
+  },
+  d,
+  cs,
+)
+
 parents :: Register -> Creature -> #[Maybe Creature, Maybe Creature]
 export parents = (lookup, c) => {
-  getter = Dict.get($, lookup)
+  getter = chain(Dict.get($, lookup))
   p1 = parent1(c)
   p2 = parent2(c)
   return #[getter(p1), getter(p2)]
@@ -76,7 +95,24 @@ export reasonNoSiblings = (_, a, b) => {
   aD = parent2(a)
   bM = parent1(b)
   bD = parent2(b)
-  return aM == bM || aM == bD || aD == bM || aD == bD
+  check = pipe(
+    List.reduce(
+      (agg, x) => if (agg.matched) {
+        agg
+      } else {
+        where(#[agg.prev, x]) {
+          #[Just(j), Just(k)] =>
+            ({ prev: x, matched: j != -1 && k != -1 && j == k })
+
+          _ =>
+            ({ prev: x, matched: false })
+        }
+      },
+      { prev: Nothing, matched: false },
+    ),
+    .matched,
+  )([aM, aD, bM, bD])
+  return check
 }
 
 reasonNoCousins :: Reason
@@ -86,7 +122,8 @@ export reasonNoCousins = (lookup, a, b) => {
   y = anc(b)
   lx = Set.length(x)
   ly = Set.length(y)
-  return lx + ly > Set.length(Set.merge(x, y))
+  check = lx + ly > Set.length(Set.merge(x, y))
+  return check
 }
 
 nameFromId :: Register -> Short -> String
@@ -104,12 +141,13 @@ conditionalReproduce :: List Reason
   -> Creature
   -> Creature
   -> Maybe Creature
-export conditionalReproduce = (checks, lookup, r, newName, s, a, b) => if (
-  List.any((check) => check(lookup, a, b), checks)
-) {
-  Nothing
-} else {
-  Just(reproduce(r, newName, s, a, b))
+export conditionalReproduce = (checks, lookup, r, newN, s, a, b) => {
+  checkFail = List.any((check) => check(lookup, a, b), checks)
+  return if (checkFail) {
+    Nothing
+  } else {
+    Just(reproduce(r, newN, s, a, b))
+  }
 }
 
 ageLimit :: Short -> Reason
@@ -121,3 +159,41 @@ export procreate = conditionalReproduce([
   reasonNoAncestor,
   ageLimit(5),
 ])
+
+selectRandomCreatures :: Random -> Register -> List (Maybe Creature)
+export selectRandomCreatures = (seed, register) => pipe(
+  Dict.keys,
+  (k) => List.repeatWith((_) => pick(k, seed), integer(2, Dict.length(register), seed)),
+  map(fromMaybe(-1)),
+  Set.fromList,
+  Set.toList,
+  map(Dict.get($, register)),
+)(register)
+
+nextGen :: Random -> Register -> Short -> List (Maybe Creature) -> List (Maybe Creature)
+export nextGen = (seed, lookup, count, parentGen) => pipe(
+  List.reduce(
+    (stack, x) => pipe(
+      where {
+        #[Nothing, Just(_)] =>
+          ({ ...stack, prev: x })
+
+        #[Just(a), Just(b)] =>
+          (
+            {
+              kids: pipe(
+                procreate(lookup, seed, newName(seed), count, a),
+                List.append($, stack.kids),
+              )(b),
+              prev: Nothing,
+            }
+          )
+
+        _ =>
+          stack
+      },
+    )(#[stack.prev, x]),
+    { kids: [], prev: Nothing },
+  ),
+  .kids,
+)(parentGen)
