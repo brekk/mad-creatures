@@ -1,0 +1,36 @@
+import Fn from "Function"
+import IO from "IO"
+import List from "List"
+import Stream from "Stream"
+import { Wish, fulfill } from "Wish"
+
+
+
+type Simulation failure success = Generation(success) | Failure(failure) | SimulationEnd
+
+export simulate = (stream) => {
+  events = []
+  push = List.append($, events)
+  return Wish(
+    (bad, good) => {
+      // update = (x) => {
+      //   events := x
+      //   return events
+      // }
+      failure = (e) => {
+        events := push(Failure(e))
+        bad(events)
+      }
+      iteration = (v) => {
+        IO.pTrace("Event!", v)
+        events := push(Generation(v))
+      }
+      cessation = () => {
+        events := push(SimulationEnd)
+        good(events)
+      }
+      Stream.subscribe(failure, iteration, cessation)(stream)
+      return () => {}
+    },
+  )
+}

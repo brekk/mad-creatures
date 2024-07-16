@@ -1,15 +1,19 @@
 import type { Random } from "Random"
 
-import type { Creature, Mood } from "@/Creature"
+import type { Creature } from "@/Creature"
 import type { Gene } from "@/Genetics"
 
+import Fn from "Function"
 import IO from "IO"
 import List from "List"
 import { Just, Nothing } from "Maybe"
 import { generateFromString } from "Random"
+import Stream from "Stream"
+import Wish from "Wish"
 
 import Creature from "@/Creature"
 import Env from "@/Environment"
+import { simulate } from "@/Simulation"
 
 
 
@@ -46,6 +50,23 @@ IO.pTrace(
 )
 */
 
+/*
+pipe(
+Stream.take(10),
+simulate,
+Wish.fulfill(
+pipe(
+IO.pTrace("bad!"),
+Fn.noop,
+),
+pipe(
+IO.pTrace("good!"),
+Fn.noop,
+),
+),
+)(Stream.interval(100))
+*/
+
 main = () => {
   seed = generateFromString("creature-0.0.1")
   env = Env.create(seed)
@@ -63,5 +84,20 @@ main = () => {
     map(Creature.name),
     IO.pTrace("starting creatures!"),
   )(starting)
-  // List.reduce((ex, _) => Env.iter(ex), starting, starting)
+
+
+  pipe(
+    Stream.reduce((agg, x) => Env.generation(agg), starting),
+    simulate,
+    Wish.fulfill(
+      pipe(
+        IO.pTrace("BAD"),
+        Fn.noop,
+      ),
+      pipe(
+        IO.pTrace("GOOD"),
+        Fn.noop,
+      ),
+    ),
+  )(Stream.range(0, 6, 1))
 }
