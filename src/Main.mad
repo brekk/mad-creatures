@@ -13,7 +13,7 @@ import Wish from "Wish"
 
 import Creature from "@/Creature"
 import Env from "@/Environment"
-import { simulate } from "@/Simulation"
+import Sim from "@/Simulation"
 
 
 
@@ -68,7 +68,7 @@ Fn.noop,
 */
 
 main = () => {
-  seed = generateFromString("creature-0.0.1")
+  seed = generateFromString("creature-0.0.2")
   env = Env.create(seed)
   IO.pTrace("ENVIRONMENT", env)
   starting = pipe(
@@ -88,16 +88,19 @@ main = () => {
 
   pipe(
     Stream.reduce((agg, x) => Env.generation(agg), starting),
-    simulate,
+    Sim.simulate,
     Wish.fulfill(
       pipe(
         IO.pTrace("BAD"),
         Fn.noop,
       ),
       pipe(
-        IO.pTrace("GOOD"),
+        // IO.pTrace("RAW"),
+        Sim.toString,
+        // map(Env.toString),
+        IO.putLine,
         Fn.noop,
       ),
     ),
-  )(Stream.range(0, 6, 1))
+  )(Stream.range(0, 20, 1))
 }

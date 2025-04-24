@@ -3,14 +3,22 @@ import type { Random } from "Random"
 import type { Register } from "@/Register"
 
 import Dict from "Dictionary"
+import IO from "IO"
 import { fromMaybe } from "Maybe"
-import { pick } from "Random"
+import { integer, pick } from "Random"
+import String from "String"
 
-import { Creature, clone, grow } from "@/Creature"
+import Creature from "@/Creature"
 import { ALL_GENES, sortGenes, spontaneous } from "@/Genetics"
 import { makeCounter } from "@/Helpers"
 import { newName } from "@/Language"
-import { addCreature, maybeAddCreatures, nextGen, selectRandomCreatures } from "@/Register"
+import {
+  addCreature,
+  dropCreature,
+  maybeAddCreatures,
+  nextGen,
+  selectRandomCreatures,
+} from "@/Register"
 
 
 
@@ -31,12 +39,28 @@ export addRandomCreature = (env) => {
   id = env.counter()
   genes = sortGenes(spontaneous(env.seed, ALL_GENES))
   newN = newName(env.seed)
-  newCreature = Creature(-1, -1, genes, id, newN, 0)
+  newCreature = Creature.Creature(-1, -1, genes, id, newN, 0)
   return {
     generation: env.generation,
     counter: env.counter,
     seed: env.seed,
     creatures: addCreature(newCreature, env.creatures),
+  }
+}
+
+removeRandomCreature :: Integer -> Environment -> Environment
+export removeRandomCreature = (probability, env) => {
+  id = env.counter()
+  genes = sortGenes(spontaneous(env.seed, ALL_GENES))
+  newN = newName(env.seed)
+  // newCreature = Creature.Creature(-1, -1, genes, id, newN, 0)
+  remove = integer(0, probability, env.seed) == probability
+  IO.pTrace("removing?", remove)
+  return {
+    generation: env.generation,
+    counter: env.counter,
+    seed: env.seed,
+    creatures: remove ? dropCreature(env.seed, env.creatures) : env.creatures,
   }
 }
 
@@ -49,7 +73,7 @@ export parthenogenesis = (env) => {
     pick($, env.seed),
     map(
       pipe(
-        clone(newN, id),
+        Creature.clone(newN, id),
         addCreature($, env.creatures),
       ),
     ),
@@ -60,11 +84,12 @@ export parthenogenesis = (env) => {
 
 season :: Environment -> Environment
 export season = (env) => {
-  return { ...env, generation: env.generation + 1, creatures: map(grow, env.creatures) }
+  return { ...env, generation: env.generation + 1, creatures: map(Creature.grow, env.creatures) }
 }
 
 genesis :: Environment -> Environment
-export genesis = (env) => (
+export genesis = (env) => removeRandomCreature(
+  3,
   {
     ...env,
     creatures: pipe(
@@ -72,7 +97,7 @@ export genesis = (env) => (
       nextGen(env.seed, env.creatures, env.counter()),
       maybeAddCreatures(env.creatures),
     )(env.creatures),
-  }
+  },
 )
 
 generation :: Environment -> Environment
@@ -87,3 +112,14 @@ export generation = pipe(
     }
   },
 )
+
+renderCreatures = pipe(
+  Dict.values,
+  map(Creature.toString),
+  String.join("\n\t"),
+)
+
+toString :: Environment -> String
+export toString = (env) => `${IO.green("generation")}: ${show(env.generation)}\n${
+  IO.yellow("creatures")
+}:\n\n\t${renderCreatures(env.creatures)}`

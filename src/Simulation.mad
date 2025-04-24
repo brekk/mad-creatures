@@ -1,8 +1,14 @@
+import type { Environment } from "@/Environment"
+
+import Dict from "Dictionary"
 import Fn from "Function"
 import IO from "IO"
 import List from "List"
 import Stream from "Stream"
+import String from "String"
 import { Wish, fulfill } from "Wish"
+
+import Env from "@/Environment"
 
 
 
@@ -22,7 +28,7 @@ export simulate = (stream) => {
         bad(events)
       }
       iteration = (v) => {
-        IO.pTrace("Event!", v)
+        // IO.pTrace("Event!", v)
         events := push(Generation(v))
       }
       cessation = () => {
@@ -34,3 +40,22 @@ export simulate = (stream) => {
     },
   )
 }
+
+// toString :: Stream f (List (Simulation f x)) -> String
+export toString = pipe(
+  map(
+    where {
+      Generation(raw) =>
+        pipe(
+          Env.toString,
+        )(raw)
+
+      Failure(raw) =>
+        show(raw)
+
+      SimulationEnd =>
+        "▄▀▄▀▄▀▄▀▄▀"
+    },
+  ),
+  String.join("\n\n"),
+)

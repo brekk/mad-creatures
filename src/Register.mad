@@ -7,7 +7,7 @@ import Dict from "Dictionary"
 import IO from "IO"
 import List from "List"
 import { Just, Nothing, fromMaybe } from "Maybe"
-import { integer, pick } from "Random"
+import { integer, pick, shuffle } from "Random"
 import Set from "Set"
 
 import { age, id, name, parent1, parent2, reproduce } from "@/Creature"
@@ -35,6 +35,15 @@ export maybeAddCreatures = (d, cs) => List.reduce(
   d,
   cs,
 )
+
+dropCreature :: Random -> Register -> Register
+export dropCreature = (seed, cs) => pipe(
+  Dict.keys,
+  shuffle($, seed),
+  List.first,
+  map(Dict.remove($, cs)),
+  fromMaybe(cs),
+)(cs)
 
 parents :: Register -> Creature -> #[Maybe Creature, Maybe Creature]
 export parents = (lookup, c) => {

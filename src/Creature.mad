@@ -5,8 +5,11 @@ import type { Gene } from "@/Genetics"
 
 import List from "List"
 import { Just, Nothing } from "Maybe"
+import String from "String"
+import Terminal from "Terminal"
 
-import { sortGenes, splice } from "@/Genetics"
+import Color from "@/Color"
+import { geneName, sortGenes, splice } from "@/Genetics"
 
 
 
@@ -139,3 +142,27 @@ export sameCreatureInList = pipe(
   ),
   .matched,
 )
+
+toStringWithSeed :: String -> Creature -> String
+export toStringWithSeed = (seedString, x) => {
+  n = pipe(
+    name,
+    (raw) => pipe(
+      Color.seeded(seedString),
+      Terminal.ansiColor($, raw),
+    )(raw),
+  )(x)
+  adjs = pipe(
+    genes,
+    map(geneName),
+    map(
+      (raw) => pipe(
+        Color.seeded(seedString),
+        Terminal.ansiColor($, raw),
+      )(raw),
+    ),
+  )(x)
+  return n ++ "\n\t\t" ++ String.join(" ", adjs)
+}
+
+export toString = toStringWithSeed("mad-creatures")
